@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tate · File Tools</title>
+<link rel="icon" type="image/png" href="img/LogoTate.png">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
+
+  :root {
+    --red: #CF1E29;
+    --red-dark: #a01520;
+    --blue: #3B82F6;
+    --text: #51515C;
+    --text-dark: #343a40;
+    --text-muted: #6c757d;
+    --border: #dee2e6;
+    --bg: #f8f9fa;
+    --white: #ffffff;
+    --green-bg: #d1e7dd; --green-text: #0a3622;
+    --warn-bg: #fff3cd;  --warn-text: #856404;
+    --red-bg: #f8d7da;   --red-text: #842029;
+  }
+
+  html, body { height: 100%; background: var(--bg); color: var(--text); }
+
+  .app { display: flex; flex-direction: column; height: 100vh; }
+
+  /* TOPBAR */
+  .topbar { background: var(--white); border-bottom: 1px solid var(--border); height: 50px; display: flex; align-items: center; padding: 0 16px; gap: 12px; flex-shrink: 0; }
+  .logo-img { height: 50px; display: flex; align-items: center; padding: 0 8px; }
+  .logo-img img { height: 30px; width: auto; }
+  .breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-muted); }
+  .breadcrumb .sep { color: var(--border); }
+  .breadcrumb .current { color: var(--red); font-weight: 500; }
+  .topbar-version { margin-left: auto; font-size: 11px; color: #adb5bd; }
+
+  .body { display: flex; flex: 1; overflow: hidden; }
+
+  /* SIDEBAR */
+  .sidebar { width: 200px; background: var(--white); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto; }
+  .nav-label { font-size: 10px; font-weight: 600; color: #adb5bd; letter-spacing: 0.8px; text-transform: uppercase; padding: 12px 16px 4px; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 16px; cursor: pointer; font-size: 13px; color: var(--text); border-left: 3px solid transparent; transition: background 0.15s; user-select: none; }
+  .nav-item:hover { background: var(--bg); }
+  .nav-item.active { background: var(--red); border-left-color: var(--red-dark); color: #fff; }
+  .nav-item.active svg { stroke: #fff; }
+  .nav-item svg { width: 15px; height: 15px; stroke: var(--text-muted); stroke-width: 2; fill: none; flex-shrink: 0; }
+  .nav-sep { height: 1px; background: var(--border); margin: 6px 0; }
+  .nav-item.disabled { opacity: 0.4; pointer-events: none; }
+
+  /* MAIN */
+  .main { flex: 1; padding: 20px 24px; display: flex; flex-direction: column; gap: 16px; overflow-y: auto; }
+  .page-title { font-size: 16px; font-weight: 600; color: var(--text-dark); }
+  .page-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+  /* CARD */
+  .card { background: var(--white); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+  .card-header { padding: 11px 16px; border-bottom: 1px solid var(--border); font-size: 13px; font-weight: 600; color: var(--text-dark); display: flex; align-items: center; gap: 8px; }
+  .card-header svg { width: 15px; height: 15px; stroke: var(--red); stroke-width: 2; fill: none; }
+  .card-body { padding: 16px; }
+  .card-footer { padding: 12px 16px; border-top: 1px solid var(--border); display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+  /* DROP ZONE */
+  .drop-zone { border: 2px dashed var(--border); border-radius: 6px; padding: 28px 16px; text-align: center; background: var(--bg); cursor: pointer; transition: border-color 0.2s, background 0.2s; }
+  .drop-zone:hover, .drop-zone.dragover { border-color: var(--red); background: #fdf5f5; }
+  .drop-zone svg { width: 34px; height: 34px; stroke: #ced4da; stroke-width: 1.5; fill: none; margin-bottom: 8px; }
+  .drop-title { font-size: 13px; font-weight: 500; color: #495057; }
+  .drop-sub { font-size: 11px; color: #adb5bd; margin-top: 4px; line-height: 1.6; }
+
+  /* LAST FOLDER CHIP */
+  .last-folder-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--bg); border: 1px solid var(--border); border-radius: 20px; padding: 4px 12px 4px 8px; font-size: 11px; color: var(--text-muted); cursor: pointer; transition: border-color 0.15s; margin-top: 10px; }
+  .last-folder-chip:hover { border-color: var(--red); color: var(--red); }
+  .last-folder-chip svg { width: 12px; height: 12px; stroke: currentColor; stroke-width: 2; fill: none; }
+
+  /* BUTTONS */
+  .btn { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; padding: 8px 18px; border-radius: 5px; border: none; cursor: pointer; font-family: 'Poppins', sans-serif; transition: filter 0.15s; }
+  .btn:hover { filter: brightness(0.92); }
+  .btn:active { filter: brightness(0.85); }
+  .btn:disabled { opacity: 0.5; pointer-events: none; }
+  .btn svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 2; fill: none; }
+  .btn-red   { background: var(--red); color: #fff; }
+  .btn-blue  { background: var(--blue); color: #fff; }
+  .btn-ghost { background: var(--white); color: var(--text); border: 1px solid var(--border); }
+  .btn-sm    { font-size: 11px; padding: 5px 12px; }
+  .btn-row   { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+
+  /* TABLE */
+  .tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .tbl th { text-align: left; padding: 8px 12px; background: var(--bg); border-bottom: 1px solid var(--border); font-weight: 600; color: #495057; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .tbl td { padding: 9px 12px; border-bottom: 1px solid #f1f3f5; vertical-align: middle; }
+  .tbl tr:last-child td { border-bottom: none; }
+  .tbl tr:hover td { background: var(--bg); }
+
+  .mono  { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--text-dark); }
+  .arrow { color: #ced4da; font-size: 14px; }
+
+  .badge { font-size: 10px; font-weight: 500; padding: 2px 8px; border-radius: 10px; display: inline-flex; align-items: center; gap: 3px; white-space: nowrap; }
+  .badge-ok      { background: var(--green-bg); color: var(--green-text); }
+  .badge-warn    { background: var(--warn-bg);  color: var(--warn-text); }
+  .badge-invalid { background: var(--red-bg);   color: var(--red-text); }
+
+  /* ALERT */
+  .alert { padding: 10px 14px; border-radius: 5px; font-size: 12px; display: flex; align-items: flex-start; gap: 8px; }
+  .alert svg { width: 15px; height: 15px; stroke: currentColor; stroke-width: 2; fill: none; flex-shrink: 0; margin-top: 1px; }
+  .alert-warn  { background: var(--warn-bg);  color: var(--warn-text); }
+  .alert-ok    { background: var(--green-bg); color: var(--green-text); }
+  .alert-error { background: var(--red-bg);   color: var(--red-text); }
+
+  /* LISTADOR BLOQUES */
+  .lst-block { background: var(--white); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; margin-bottom: 12px; }
+  .lst-block-header { padding: 8px 14px; background: var(--bg); border-bottom: 1px solid var(--border); font-size: 11px; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; justify-content: space-between; }
+  .lst-block-header span { font-family: 'JetBrains Mono', monospace; }
+  .lst-codes { padding: 12px 14px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-dark); line-height: 2; }
+  .lst-block-footer { padding: 8px 14px; border-top: 1px solid var(--border); display: flex; gap: 8px; }
+  .copied-flash { color: var(--green-text) !important; }
+
+  /* PROGRESS */
+  .progress-wrap { background: var(--bg); border-radius: 10px; height: 6px; overflow: hidden; }
+  .progress-bar  { height: 100%; background: var(--red); border-radius: 10px; transition: width 0.3s; }
+
+  /* INPUT */
+  .input-wrap { display: flex; align-items: center; gap: 10px; }
+  input[type=number], input[type=text] { width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 5px; font-size: 13px; font-family: 'Poppins', sans-serif; color: var(--text-dark); background: var(--white); outline: none; transition: border-color 0.2s; }
+  input:focus { border-color: var(--red); }
+  label { font-size: 12px; color: var(--text-muted); font-weight: 500; display: block; margin-bottom: 6px; }
+
+  /* STATUS */
+  .statusbar { background: var(--white); border-top: 1px solid var(--border); padding: 7px 24px; display: flex; align-items: center; gap: 16px; flex-shrink: 0; }
+  .status-dot  { width: 7px; height: 7px; border-radius: 50%; background: #28a745; flex-shrink: 0; }
+  .status-item { font-size: 11px; color: var(--text-muted); }
+
+  .hidden { display: none !important; }
+  .tool-view { display: none; flex-direction: column; gap: 16px; }
+  .tool-view.active { display: flex; }
+
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #ced4da; border-radius: 10px; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="logo-img">
+      <img src="img/LogoTate.png" alt="Tate">
+    </div>
+    <div class="breadcrumb">
+      <span>File Tools</span>
+      <span class="sep">›</span>
+      <span class="current" id="breadcrumb-current">Renombrador</span>
+    </div>
+    <span class="topbar-version">v1.1 · Chrome / Edge</span>
+  </div>
+
+  <div class="body">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="nav-label">Herramientas</div>
+      <div class="nav-item active" onclick="showTool('renombrador',this)">
+        <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        Renombrador
+      </div>
+      <div class="nav-item" onclick="showTool('lotes',this)">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        Lotes
+      </div>
+      <div class="nav-item" onclick="showTool('listador',this)">
+        <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        Listador
+      </div>
+      <div class="nav-sep"></div>
+      <div class="nav-label">Próximamente</div>
+      <div class="nav-item disabled">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Nueva herramienta
+      </div>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main" id="main-content">
+
+      <!-- ══════════════════════════════════
+           HERRAMIENTA 1: RENOMBRADOR
+      ══════════════════════════════════ -->
+      <div class="tool-view active" id="tool-renombrador">
+        <div>
+          <div class="page-title">Renombrador de archivos</div>
+          <div class="page-sub">Limpia sufijos incorrectos · conserva la extensión · solo imágenes</div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            Seleccionar carpeta
+          </div>
+          <div class="card-body">
+            <div class="drop-zone" id="ren-dropzone"
+              onclick="selectFolder('ren')"
+              ondragover="onDragOver(event,'ren-dropzone')"
+              ondragleave="onDragLeave('ren-dropzone')"
+              ondrop="onDrop(event,'ren')">
+              <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+              <div class="drop-title">Arrastrá la carpeta acá, o hacé click para navegar</div>
+              <div class="drop-sub">.jpg · .jpeg · .png · .webp · .tif · .tiff · .heic · .avif</div>
+            </div>
+            <div id="ren-last-chip"></div>
+            <div class="btn-row">
+              <button class="btn btn-red" onclick="selectFolder('ren')">
+                <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                Seleccionar carpeta
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card hidden" id="ren-preview-card">
+          <div class="card-header">
+            <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            Vista previa — <span id="ren-count">0</span> imágenes detectadas
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="tbl">
+              <thead><tr><th>Nombre original</th><th style="width:28px;"></th><th>Resultado</th><th>Estado</th></tr></thead>
+              <tbody id="ren-tbody"></tbody>
+            </table>
+          </div>
+          <div id="ren-invalid-wrap"></div>
+          <div class="card-footer">
+            <button class="btn btn-blue" id="ren-apply-btn" onclick="applyRenames()">
+              <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+              Aplicar renombres
+            </button>
+            <button class="btn btn-ghost" onclick="selectFolder('ren')">
+              <svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
+              Otra carpeta
+            </button>
+          </div>
+        </div>
+
+        <div class="card hidden" id="ren-result-card">
+          <div class="card-header">
+            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            Resultado
+          </div>
+          <div class="card-body" id="ren-result-body"></div>
+        </div>
+      </div>
+
+
+      <!-- ══════════════════════════════════
+           HERRAMIENTA 2: LOTES
+      ══════════════════════════════════ -->
+      <div class="tool-view" id="tool-lotes">
+        <div>
+          <div class="page-title">Separador en lotes</div>
+          <div class="page-sub">Divide imágenes en subcarpetas de N archivos</div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            Seleccionar carpeta
+          </div>
+          <div class="card-body">
+            <div class="drop-zone" id="lot-dropzone"
+              onclick="selectFolder('lot')"
+              ondragover="onDragOver(event,'lot-dropzone')"
+              ondragleave="onDragLeave('lot-dropzone')"
+              ondrop="onDrop(event,'lot')">
+              <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+              <div class="drop-title">Arrastrá la carpeta acá, o hacé click para navegar</div>
+              <div class="drop-sub">Solo archivos de imagen · ignora carpetas y otros archivos</div>
+            </div>
+            <div id="lot-last-chip"></div>
+            <div class="btn-row">
+              <button class="btn btn-red" onclick="selectFolder('lot')">
+                <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                Seleccionar carpeta
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card hidden" id="lot-config-card">
+          <div class="card-header">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            Configuración — <span id="lot-total">0</span> imágenes encontradas
+          </div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:14px;">
+            <div>
+              <label>¿De cuántos archivos querés cada lote?</label>
+              <div class="input-wrap">
+                <input type="number" id="lot-size" min="1" value="100" style="max-width:160px;" oninput="updateLotPreview()">
+                <span style="font-size:12px;color:var(--text-muted);" id="lot-preview-text"></span>
+              </div>
+            </div>
+            <div id="lot-preview-list" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+          </div>
+          <div class="card-footer">
+            <button class="btn btn-blue" onclick="applyLotes()">
+              <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+              Crear lotes
+            </button>
+            <button class="btn btn-ghost" onclick="selectFolder('lot')">
+              <svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
+              Otra carpeta
+            </button>
+          </div>
+        </div>
+
+        <div class="card hidden" id="lot-progress-card">
+          <div class="card-header">
+            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            Progreso
+          </div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:10px;">
+            <div class="progress-wrap"><div class="progress-bar" id="lot-progress-bar" style="width:0%"></div></div>
+            <div style="font-size:12px;color:var(--text-muted);" id="lot-progress-label">Iniciando...</div>
+          </div>
+        </div>
+
+        <div class="card hidden" id="lot-result-card">
+          <div class="card-header">
+            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            Lotes creados
+          </div>
+          <div class="card-body" id="lot-result-body"></div>
+        </div>
+      </div>
+
+
+      <!-- ══════════════════════════════════
+           HERRAMIENTA 3: LISTADOR
+      ══════════════════════════════════ -->
+      <div class="tool-view" id="tool-listador">
+        <div>
+          <div class="page-title">Listador de códigos</div>
+          <div class="page-sub">Extrae códigos de 13 dígitos · sin duplicados · bloques de 20 · listo para Excel</div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            Seleccionar carpeta
+          </div>
+          <div class="card-body">
+            <div class="drop-zone" id="lst-dropzone"
+              onclick="selectFolder('lst')"
+              ondragover="onDragOver(event,'lst-dropzone')"
+              ondragleave="onDragLeave('lst-dropzone')"
+              ondrop="onDrop(event,'lst')">
+              <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+              <div class="drop-title">Arrastrá la carpeta acá, o hacé click para navegar</div>
+              <div class="drop-sub">Busca archivos cuyo nombre base tenga exactamente 13 dígitos</div>
+            </div>
+            <div id="lst-last-chip"></div>
+            <div class="btn-row">
+              <button class="btn btn-red" onclick="selectFolder('lst')">
+                <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                Seleccionar carpeta
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card hidden" id="lst-result-card">
+          <div class="card-header">
+            <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            <span id="lst-header-text">Resultado</span>
+            <div style="margin-left:auto;display:flex;gap:6px;">
+              <button class="btn btn-ghost btn-sm" onclick="copyAllListado()">
+                <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                Copiar todo
+              </button>
+              <button class="btn btn-ghost btn-sm" onclick="downloadListado()">
+                <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Descargar todo
+              </button>
+            </div>
+          </div>
+          <div class="card-body" id="lst-blocks-container" style="padding:12px;display:flex;flex-direction:column;gap:0;"></div>
+        </div>
+      </div>
+
+    </div><!-- /main -->
+  </div><!-- /body -->
+
+  <!-- STATUS BAR -->
+  <div class="statusbar">
+    <div class="status-dot" id="status-dot"></div>
+    <div class="status-item" id="status-text">Listo · seleccioná una carpeta para empezar</div>
+  </div>
+
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+// CONSTANTES Y ESTADO
+// ══════════════════════════════════════════════════════
+const IMG_EXTS = new Set(['jpg','jpeg','png','webp','tif','tiff','heic','avif','bmp','gif']);
+const DB_NAME  = 'tate-file-tools';
+const DB_VER   = 1;
+const STORE    = 'last-handles';
+
+let renFiles = [], renDirHandle = null;
+let lotFiles = [], lotDirHandle = null;
+let lstCodesAll = [];   // array de strings ordenados
+let lstBlocks   = [];   // array de arrays (grupos de 20)
+
+// ══════════════════════════════════════════════════════
+// INDEXEDDB — guardar/recuperar último handle
+// ══════════════════════════════════════════════════════
+function openDB() {
+  return new Promise((res, rej) => {
+    const req = indexedDB.open(DB_NAME, DB_VER);
+    req.onupgradeneeded = e => e.target.result.createObjectStore(STORE);
+    req.onsuccess = e => res(e.target.result);
+    req.onerror   = e => rej(e);
+  });
+}
+async function saveHandle(key, handle) {
+  try {
+    const db = await openDB();
+    const tx = db.transaction(STORE, 'readwrite');
+    tx.objectStore(STORE).put(handle, key);
+  } catch(_) {}
+}
+async function loadHandle(key) {
+  try {
+    const db = await openDB();
+    return new Promise((res) => {
+      const tx  = db.transaction(STORE, 'readonly');
+      const req = tx.objectStore(STORE).get(key);
+      req.onsuccess = e => res(e.target.result || null);
+      req.onerror   = () => res(null);
+    });
+  } catch(_) { return null; }
+}
+
+// ══════════════════════════════════════════════════════
+// DRAG & DROP — funciones compartidas
+// ══════════════════════════════════════════════════════
+function onDragOver(e, zoneId) {
+  e.preventDefault();
+  e.stopPropagation();
+  document.getElementById(zoneId).classList.add('dragover');
+}
+function onDragLeave(zoneId) {
+  document.getElementById(zoneId).classList.remove('dragover');
+}
+async function onDrop(e, tool) {
+  e.preventDefault();
+  e.stopPropagation();
+  document.getElementById(tool + '-dropzone').classList.remove('dragover');
+
+  // Intentar con FileSystemHandle (Chrome 86+)
+  const items = [...e.dataTransfer.items];
+  for (const item of items) {
+    if (item.kind === 'file') {
+      try {
+        // getAsFileSystemHandle → da un FileSystemDirectoryHandle directamente
+        const handle = await item.getAsFileSystemHandle();
+        if (handle && handle.kind === 'directory') {
+          await processDir(tool, handle);
+          return;
+        }
+      } catch(_) {}
+
+      // Fallback: webkitGetAsEntry
+      const entry = item.webkitGetAsEntry && item.webkitGetAsEntry();
+      if (entry && entry.isDirectory) {
+        setStatus('Carpeta detectada por drag & drop, abriendo…', '#3B82F6');
+        // Con webkitEntry no podemos escribir; pedimos confirmación al user
+        await selectFolder(tool);
+        return;
+      }
+    }
+  }
+  setStatus('Arrastrá una carpeta (no archivos sueltos)', '#856404');
+}
+
+// ══════════════════════════════════════════════════════
+// SELECCIÓN DE CARPETA — unificada
+// ══════════════════════════════════════════════════════
+async function selectFolder(tool) {
+  if (!window.showDirectoryPicker) {
+    alert('Tu navegador no soporta esta función.\nUsá Google Chrome o Microsoft Edge.');
+    return;
+  }
+  const needsWrite = tool !== 'lst';
+  try {
+    const handle = await window.showDirectoryPicker({ mode: needsWrite ? 'readwrite' : 'read' });
+    await saveHandle(tool, handle);
+    await processDir(tool, handle);
+  } catch(e) {
+    if (e.name !== 'AbortError') setStatus('Error: ' + e.message, '#CF1E29');
+  }
+}
+
+// Mostrar chip de "última carpeta usada"
+async function renderLastChip(tool) {
+  const chipEl = document.getElementById(tool + '-last-chip');
+  if (!chipEl) return;
+  const handle = await loadHandle(tool);
+  if (!handle) { chipEl.innerHTML = ''; return; }
+
+  // Verificar que el permiso siga activo
+  const perm = await handle.queryPermission({ mode: tool !== 'lst' ? 'readwrite' : 'read' });
+  if (perm === 'denied') { chipEl.innerHTML = ''; return; }
+
+  chipEl.innerHTML = `
+    <div class="last-folder-chip" onclick="reopenLast('${tool}')">
+      <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+      Última: <strong style="color:var(--red);">${esc(handle.name)}</strong> — click para reabrir
+    </div>`;
+}
+
+async function reopenLast(tool) {
+  const handle = await loadHandle(tool);
+  if (!handle) return;
+  const mode = tool !== 'lst' ? 'readwrite' : 'read';
+  try {
+    // Pedir permiso si es necesario
+    const perm = await handle.requestPermission({ mode });
+    if (perm !== 'granted') { setStatus('Permiso denegado', '#CF1E29'); return; }
+    await processDir(tool, handle);
+  } catch(e) {
+    setStatus('No se pudo reabrir: ' + e.message, '#CF1E29');
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// PROCESAMIENTO DE CARPETA
+// ══════════════════════════════════════════════════════
+async function processDir(tool, handle) {
+  if (tool === 'ren') { renDirHandle = handle; await scanRen(); }
+  if (tool === 'lot') { lotDirHandle = handle; await scanLot(); }
+  if (tool === 'lst') { await scanLst(handle); }
+  renderLastChip(tool);
+}
+
+// ══════════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════════
+function isImage(name) { return IMG_EXTS.has(name.split('.').pop().toLowerCase()); }
+function setStatus(msg, color) {
+  document.getElementById('status-text').textContent = msg;
+  document.getElementById('status-dot').style.background = color || '#28a745';
+}
+function show(id) { document.getElementById(id).classList.remove('hidden'); }
+function hide(id) { document.getElementById(id).classList.add('hidden'); }
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function showTool(id, el) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.tool-view').forEach(t => t.classList.remove('active'));
+  document.getElementById('tool-' + id).classList.add('active');
+  const names = { renombrador:'Renombrador', lotes:'Lotes', listador:'Listador' };
+  document.getElementById('breadcrumb-current').textContent = names[id];
+  setStatus('Listo · seleccioná una carpeta para empezar');
+  renderLastChip(id === 'renombrador' ? 'ren' : id === 'lotes' ? 'lot' : 'lst');
+}
+
+// ══════════════════════════════════════════════════════
+// HERRAMIENTA 1: RENOMBRADOR
+// ══════════════════════════════════════════════════════
+function cleanName(base) {
+  const validFull = /^(\d{13})(-([2-9]|[1-9]\d+))?$/;
+  if (validFull.test(base)) return { newBase: base, changed: false, invalid: false };
+
+  // "-1" al final solo → quitar
+  if (/^(\d{13})-1$/.test(base))
+    return { newBase: base.replace(/-1$/,''), changed: true, invalid: false };
+
+  // 13 dígitos + sufijo opcional válido + basura → extraer la parte válida
+  const m = base.match(/^(\d{13}(-[2-9]|-[1-9]\d+)?)/);
+  if (m && m[0] !== base) return { newBase: m[1], changed: true, invalid: false };
+
+  // 13 dígitos solos + basura
+  const m2 = base.match(/^(\d{13})/);
+  if (m2 && m2[0] !== base) return { newBase: m2[1], changed: true, invalid: false };
+
+  return { newBase: base, changed: false, invalid: true };
+}
+
+async function scanRen() {
+  renFiles = [];
+  for await (const [name, handle] of renDirHandle.entries()) {
+    if (handle.kind !== 'file' || !isImage(name)) continue;
+    const dot  = name.lastIndexOf('.');
+    const base = dot >= 0 ? name.slice(0, dot) : name;
+    const ext  = dot >= 0 ? name.slice(dot) : '';
+    const { newBase, changed, invalid } = cleanName(base);
+    renFiles.push({ handle, name, newName: newBase + ext, changed, invalid });
+  }
+  if (!renFiles.length) {
+    setStatus('No se encontraron imágenes en esa carpeta', '#856404');
+    hide('ren-preview-card'); return;
+  }
+  renderRenPreview();
+}
+
+function renderRenPreview() {
+  document.getElementById('ren-count').textContent = renFiles.length;
+  const tbody = document.getElementById('ren-tbody');
+  tbody.innerHTML = '';
+  let invalids = [], changes = 0, ok = 0;
+
+  renFiles.forEach(f => {
+    const tr = document.createElement('tr');
+    let badge;
+    if (f.invalid)       { badge = '<span class="badge badge-invalid">✗ nombre inválido</span>'; invalids.push(f.name); }
+    else if (f.changed)  { badge = '<span class="badge badge-warn">⚠ corregido</span>'; changes++; }
+    else                 { badge = '<span class="badge badge-ok">✓ ok</span>'; ok++; }
+    tr.innerHTML = `<td class="mono">${esc(f.name)}</td><td class="arrow">→</td><td class="mono">${esc(f.newName)}</td><td>${badge}</td>`;
+    tbody.appendChild(tr);
+  });
+
+  const wrap = document.getElementById('ren-invalid-wrap');
+  wrap.innerHTML = invalids.length
+    ? `<div style="padding:12px 16px;border-top:1px solid var(--border);">
+        <div class="alert alert-warn">
+          <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <div><strong>Nombres inválidos (se dejan sin cambios):</strong><br>
+          <span class="mono" style="font-size:11px;">${invalids.map(esc).join(', ')}</span></div>
+        </div></div>` : '';
+
+  document.getElementById('ren-apply-btn').disabled = changes === 0;
+  setStatus(`${changes} correcciones · ${ok} ok · ${invalids.length} inválidos`);
+  show('ren-preview-card');
+  hide('ren-result-card');
+}
+
+async function applyRenames() {
+  const toRename = renFiles.filter(f => f.changed);
+  let done = 0, errors = [];
+  for (const f of toRename) {
+    try {
+      const file = await f.handle.getFile();
+      const buf  = await file.arrayBuffer();
+      const nh   = await renDirHandle.getFileHandle(f.newName, { create: true });
+      const w    = await nh.createWritable();
+      await w.write(buf); await w.close();
+      if (f.name !== f.newName) await renDirHandle.removeEntry(f.name);
+      done++;
+    } catch(e) { errors.push(`${f.name}: ${e.message}`); }
+  }
+  let html = done
+    ? `<div class="alert alert-ok" style="margin-bottom:10px;"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg><div>${done} archivo${done>1?'s':''} renombrado${done>1?'s':''} correctamente.</div></div>` : '';
+  if (errors.length)
+    html += `<div class="alert alert-error"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><div><strong>Errores:</strong><br>${errors.map(esc).join('<br>')}</div></div>`;
+  document.getElementById('ren-result-body').innerHTML = html;
+  show('ren-result-card'); hide('ren-preview-card');
+  setStatus(`✓ ${done} renombrados · ${errors.length} errores`, done > 0 ? '#28a745' : '#CF1E29');
+}
+
+// ══════════════════════════════════════════════════════
+// HERRAMIENTA 2: LOTES
+// ══════════════════════════════════════════════════════
+async function scanLot() {
+  lotFiles = [];
+  for await (const [name, handle] of lotDirHandle.entries()) {
+    if (handle.kind !== 'file' || !isImage(name)) continue;
+    lotFiles.push({ name, handle });
+  }
+  if (!lotFiles.length) {
+    setStatus('No se encontraron imágenes en esa carpeta', '#856404');
+    hide('lot-config-card'); return;
+  }
+  lotFiles.sort((a,b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
+  document.getElementById('lot-total').textContent = lotFiles.length;
+  updateLotPreview();
+  show('lot-config-card'); hide('lot-progress-card'); hide('lot-result-card');
+  setStatus(`${lotFiles.length} imágenes en "${lotDirHandle.name}"`, '#28a745');
+}
+
+function updateLotPreview() {
+  const size = parseInt(document.getElementById('lot-size').value) || 0;
+  if (size < 1 || !lotFiles.length) {
+    document.getElementById('lot-preview-text').textContent = '';
+    document.getElementById('lot-preview-list').innerHTML = '';
+    return;
+  }
+  const cant = Math.ceil(lotFiles.length / size);
+  document.getElementById('lot-preview-text').textContent = `→ Se crearán ${cant} carpeta${cant>1?'s':''}`;
+  let html = '';
+  for (let i = 1; i <= cant; i++) {
+    const cnt = Math.min(size, lotFiles.length - (i-1)*size);
+    html += `<span class="badge badge-ok" style="font-size:11px;">Lote ${i} · ${cnt} imgs</span>`;
+  }
+  document.getElementById('lot-preview-list').innerHTML = html;
+}
+
+async function applyLotes() {
+  const size = parseInt(document.getElementById('lot-size').value);
+  if (!size || size < 1) { alert('Ingresá un número válido.'); return; }
+  const cant = Math.ceil(lotFiles.length / size);
+  show('lot-progress-card'); hide('lot-result-card');
+  const bar   = document.getElementById('lot-progress-bar');
+  const label = document.getElementById('lot-progress-label');
+  let done = 0, errors = [];
+
+  for (let i = 0; i < cant; i++) {
+    const loteName = `lote ${i+1}`;
+    let subDir;
+    try { subDir = await lotDirHandle.getDirectoryHandle(loteName, { create: true }); }
+    catch(e) { errors.push(`No se pudo crear "${loteName}": ${e.message}`); continue; }
+    for (const f of lotFiles.slice(i*size, (i+1)*size)) {
+      try {
+        const file = await f.handle.getFile();
+        const buf  = await file.arrayBuffer();
+        const nh   = await subDir.getFileHandle(f.name, { create: true });
+        const w    = await nh.createWritable();
+        await w.write(buf); await w.close();
+        done++;
+        bar.style.width   = Math.round(done/lotFiles.length*100)+'%';
+        label.textContent = `Copiando: ${f.name} (${done}/${lotFiles.length})`;
+      } catch(e) { errors.push(`${f.name}: ${e.message}`); }
+    }
+  }
+
+  let html = `<div class="alert alert-ok" style="margin-bottom:10px;"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg><div>${cant} carpeta${cant>1?'s':''} creada${cant>1?'s':''} · ${done} archivos copiados.</div></div>`;
+  if (errors.length)
+    html += `<div class="alert alert-error"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><div><strong>Errores:</strong><br>${errors.map(esc).join('<br>')}</div></div>`;
+  html += `<p style="font-size:11px;color:var(--text-muted);margin-top:10px;">Los archivos originales quedaron en la carpeta raíz. Podés borrarlos manualmente.</p>`;
+  document.getElementById('lot-result-body').innerHTML = html;
+  show('lot-result-card');
+  setStatus(`✓ ${cant} lotes creados · ${done} archivos`, '#28a745');
+}
+
+// ══════════════════════════════════════════════════════
+// HERRAMIENTA 3: LISTADOR
+// ══════════════════════════════════════════════════════
+const LST_BLOCK_SIZE = 20;
+
+async function scanLst(dirHandle) {
+  const codes = new Set();
+  for await (const [name, handle] of dirHandle.entries()) {
+    if (handle.kind !== 'file' || !isImage(name)) continue;
+    const dot  = name.lastIndexOf('.');
+    const base = dot >= 0 ? name.slice(0, dot) : name;
+    if (/^\d{13}$/.test(base)) codes.add(base);
+  }
+  if (!codes.size) {
+    setStatus('No se encontraron códigos de 13 dígitos', '#856404');
+    hide('lst-result-card'); return;
+  }
+
+  lstCodesAll = Array.from(codes).sort();
+  lstBlocks   = [];
+  for (let i = 0; i < lstCodesAll.length; i += LST_BLOCK_SIZE)
+    lstBlocks.push(lstCodesAll.slice(i, i + LST_BLOCK_SIZE));
+
+  document.getElementById('lst-header-text').textContent =
+    `${lstCodesAll.length} códigos únicos · ${lstBlocks.length} bloque${lstBlocks.length>1?'s':''}`;
+
+  // Renderizar bloques
+  const container = document.getElementById('lst-blocks-container');
+  container.innerHTML = '';
+  lstBlocks.forEach((block, idx) => {
+    const text = block.join('\n');   // uno por línea
+    const div  = document.createElement('div');
+    div.className = 'lst-block';
+    div.innerHTML = `
+      <div class="lst-block-header">
+        <span>Bloque ${idx+1} · ${block.length} código${block.length>1?'s':''}</span>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-ghost btn-sm" id="lst-copy-btn-${idx}" onclick="copyBlock(${idx})">
+            <svg viewBox="0 0 24 24" style="width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none;"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copiar
+          </button>
+          <button class="btn btn-ghost btn-sm" onclick="downloadBlock(${idx})">
+            <svg viewBox="0 0 24 24" style="width:12px;height:12px;stroke:currentColor;stroke-width:2;fill:none;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            .txt
+          </button>
+        </div>
+      </div>
+      <div class="lst-codes" id="lst-block-text-${idx}">${esc(text)}</div>`;
+    container.appendChild(div);
+  });
+
+  show('lst-result-card');
+  setStatus(`${lstCodesAll.length} códigos únicos · ${lstBlocks.length} bloques de ${LST_BLOCK_SIZE} en "${dirHandle.name}"`, '#28a745');
+}
+
+async function copyBlock(idx) {
+  const text = lstBlocks[idx].join('\n');
+  try {
+    await navigator.clipboard.writeText(text);
+    const btn = document.getElementById(`lst-copy-btn-${idx}`);
+    const orig = btn.innerHTML;
+    btn.innerHTML = '✓ Copiado';
+    btn.style.color = 'var(--green-text)';
+    setTimeout(() => { btn.innerHTML = orig; btn.style.color = ''; }, 2000);
+  } catch(e) { setStatus('No se pudo copiar: ' + e.message, '#CF1E29'); }
+}
+
+function downloadBlock(idx) {
+  const text = lstBlocks[idx].join('\n');
+  const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `codigos-bloque-${idx+1}.txt`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+async function copyAllListado() {
+  const text = lstBlocks.map(b => b.join('\n')).join('\n\n');
+  try {
+    await navigator.clipboard.writeText(text);
+    setStatus('✓ Todo copiado al portapapeles', '#28a745');
+  } catch(e) { setStatus('No se pudo copiar: ' + e.message, '#CF1E29'); }
+}
+
+function downloadListado() {
+  const text = lstBlocks.map((b,i) => `--- Bloque ${i+1} ---\n${b.join('\n')}`).join('\n\n');
+  const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'listado-codigos.txt';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  setStatus('✓ Archivo descargado', '#28a745');
+}
+
+// Cargar chips al iniciar
+renderLastChip('ren');
+</script>
+</body>
+</html>
