@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tate · File Tools</title>
+<title>Tate · Herramientas de Fotos</title>
 <link rel="icon" type="image/png" href="img/LogoTate.png">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -139,6 +139,8 @@
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: #ced4da; border-radius: 10px; }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
 </head>
 <body>
 <div class="app">
@@ -149,7 +151,7 @@
       <img src="img/LogoTate.png" alt="Tate">
     </div>
     <div class="breadcrumb">
-      <span>File Tools</span>
+      <span>Herramientas de Fotos</span>
       <span class="sep">›</span>
       <span class="current" id="breadcrumb-current">Renombrador</span>
     </div>
@@ -164,6 +166,14 @@
       <div class="nav-item active" onclick="showTool('renombrador',this)">
         <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
         Renombrador
+      </div>
+      <div class="nav-item" onclick="showTool('renfotos',this)">
+        <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        Renombrador de Fotos
+      </div>
+      <div class="nav-item" onclick="showTool('conversor',this)">
+        <svg viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+        Conversor de Códigos
       </div>
       <div class="nav-item" onclick="showTool('lotes',this)">
         <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
@@ -387,6 +397,194 @@
         </div>
       </div>
 
+      <!-- ══════════════════════════════════
+           HERRAMIENTA 4: RENOMBRADOR DE FOTOS
+      ══════════════════════════════════ -->
+      <div class="tool-view" id="tool-renfotos">
+        <div>
+          <div class="page-title">Renombrador de Fotos</div>
+          <div class="page-sub">Fotografía con cámara en mano · agrupá, asigná códigos y descargá el ZIP renombrado</div>
+        </div>
+
+        <!-- STEP NAV -->
+        <div style="display:flex;align-items:center;margin-bottom:8px;" id="rf-step-nav">
+          <div class="rf-pill active" id="rf-pill1" style="display:flex;align-items:center;gap:7px;padding:8px 18px;font-size:12px;font-weight:600;color:#fff;background:var(--red);border:1px solid var(--red);border-radius:24px 0 0 24px;">
+            <div style="width:20px;height:20px;border-radius:50%;background:rgba(255,255,255,0.3);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;">1</div>
+            <span>Cargar fotos</span>
+          </div>
+          <div style="width:0;height:0;border-top:20px solid transparent;border-bottom:20px solid transparent;border-left:12px solid var(--red);flex-shrink:0;" id="rf-sep1"></div>
+          <div id="rf-pill2" style="display:flex;align-items:center;gap:7px;padding:8px 18px;font-size:12px;font-weight:600;color:var(--text-muted);background:#fff;border:1px solid var(--border);">
+            <div style="width:20px;height:20px;border-radius:50%;background:var(--border);color:var(--text-muted);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;">2</div>
+            <span>Códigos y grupos</span>
+          </div>
+          <div style="width:0;height:0;border-top:20px solid transparent;border-bottom:20px solid transparent;border-left:12px solid var(--border);flex-shrink:0;" id="rf-sep2"></div>
+          <div id="rf-pill3" style="display:flex;align-items:center;gap:7px;padding:8px 18px;font-size:12px;font-weight:600;color:var(--text-muted);background:#fff;border:1px solid var(--border);border-radius:0 24px 24px 0;">
+            <div style="width:20px;height:20px;border-radius:50%;background:var(--border);color:var(--text-muted);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;">3</div>
+            <span>Confirmar y descargar</span>
+          </div>
+        </div>
+
+        <!-- PANEL 1: CARGA -->
+        <div id="rf-panel1">
+          <div class="card">
+            <div class="card-header">
+              <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              Seleccionar fotos de la sesión
+            </div>
+            <div class="card-body">
+              <div class="drop-zone" id="rf-dropzone"
+                ondragover="rfDragOver(event)"
+                ondragleave="rfDragLeave()"
+                ondrop="rfDrop(event)">
+                <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                <div class="drop-title">Arrastrá todas las fotos de la sesión acá</div>
+                <div class="drop-sub">JPG · PNG · WEBP · HEIC — todas juntas, en cualquier orden</div>
+              </div>
+              <div class="btn-row">
+                <button class="btn btn-red" onclick="document.getElementById('rf-file-input').click()">
+                  <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                  Seleccionar archivos
+                </button>
+                <input type="file" id="rf-file-input" multiple accept="image/*,.heic" style="display:none" onchange="rfLoadFiles(Array.from(this.files))">
+              </div>
+            </div>
+          </div>
+          <div class="alert alert-warn" style="margin-top:8px;">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Todo el procesamiento es local en tu navegador. Ningún archivo sale de tu computadora.
+          </div>
+        </div>
+
+        <!-- PANEL 2: CÓDIGOS + GRUPOS -->
+        <div id="rf-panel2" style="display:none;">
+          <div style="display:grid;grid-template-columns:260px 1fr;gap:16px;align-items:start;">
+
+            <!-- IZQUIERDA: CÓDIGOS -->
+            <div class="card" style="position:sticky;top:60px;">
+              <div class="card-header">
+                <svg viewBox="0 0 24 24"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>
+                Códigos del Sheet
+              </div>
+              <div class="card-body" style="display:flex;flex-direction:column;gap:8px;">
+                <div style="font-size:11px;color:var(--text-muted);">Pegá uno por línea, en orden de fotografiado</div>
+                <textarea id="rf-codes-ta" placeholder="0001231230001&#10;0001231230002&#10;..."
+                  style="width:100%;min-height:180px;border:1px solid var(--border);border-radius:5px;padding:8px 10px;font-family:'JetBrains Mono',monospace;font-size:11px;resize:vertical;outline:none;line-height:1.9;"
+                  oninput="rfRenderCodeList()"></textarea>
+                <div id="rf-codes-count" style="font-size:10px;color:var(--text-muted);font-family:'JetBrains Mono',monospace;">0 códigos</div>
+                <div id="rf-code-list" style="display:flex;flex-direction:column;gap:2px;max-height:220px;overflow-y:auto;"></div>
+              </div>
+            </div>
+
+            <!-- DERECHA: GRILLA -->
+            <div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                <span style="font-size:13px;font-weight:600;color:var(--text-dark);">Fotos de la sesión</span>
+                <span style="font-size:11px;color:var(--text-muted);" id="rf-photo-count"></span>
+              </div>
+              <div class="alert alert-warn" style="margin-bottom:10px;font-size:11px;">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                Hacé clic en las fotos de un producto (se marcan en rojo) → "Crear grupo". El grupo se asigna al siguiente código en orden.
+              </div>
+              <div id="rf-photo-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;"></div>
+              <div id="rf-status-banner" style="display:none;margin-top:12px;padding:12px 14px;border-radius:6px;font-size:12px;font-weight:500;display:none;align-items:center;gap:10px;"></div>
+              <div id="rf-groups-summary" style="margin-top:12px;display:flex;flex-direction:column;gap:5px;"></div>
+              <div class="btn-row" style="margin-top:16px;">
+                <button class="btn btn-ghost" onclick="rfGoStep(1)">← Volver</button>
+                <button class="btn btn-blue" id="rf-btn-step3" disabled onclick="rfGoStep(3)">Ver mapeo →</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PANEL 3: MAPEO Y DESCARGA -->
+        <div id="rf-panel3" style="display:none;">
+          <div id="rf-p3-summary" class="alert alert-ok" style="margin-bottom:12px;"></div>
+          <div style="overflow-x:auto;">
+            <table class="tbl">
+              <thead><tr><th></th><th>Nombre original</th><th style="width:28px;"></th><th>Nombre nuevo</th><th>Grupo</th></tr></thead>
+              <tbody id="rf-map-body"></tbody>
+            </table>
+          </div>
+          <div class="btn-row" style="margin-top:16px;">
+            <button class="btn btn-ghost" onclick="rfGoStep(2)">← Volver a editar</button>
+            <button class="btn btn-blue" id="rf-btn-dl" onclick="rfDownloadZip()">
+              <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Descargar ZIP
+            </button>
+          </div>
+          <div style="display:none;margin-top:10px;" id="rf-prog-wrap">
+            <div class="progress-wrap"><div class="progress-bar" id="rf-prog-bar" style="width:0%"></div></div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:4px;" id="rf-prog-label"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════
+           HERRAMIENTA 5: CONVERSOR DE CÓDIGOS
+      ══════════════════════════════════ -->
+      <div class="tool-view" id="tool-conversor">
+        <div>
+          <div class="page-title">Conversor de Códigos</div>
+          <div class="page-sub">Proveedor → SKU interno · consulta la API local · listo para copiar</div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:4px;">
+          <div class="card">
+            <div class="card-header">
+              <svg viewBox="0 0 24 24"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>
+              Códigos a convertir
+            </div>
+            <div class="card-body">
+              <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">Uno por línea — proveedor o interno, mezclados</div>
+              <textarea id="cv-input" placeholder="7799071237912&#10;0003306710001&#10;..." style="width:100%;min-height:220px;border:1px solid var(--border);border-radius:5px;padding:8px 10px;font-family:'JetBrains Mono',monospace;font-size:11px;resize:vertical;outline:none;line-height:1.9;" oninput="cvCountInput()"></textarea>
+              <div id="cv-in-count" style="font-size:10px;color:var(--text-muted);margin-top:4px;font-family:'JetBrains Mono',monospace;">0 códigos</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <svg viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+              SKU internos resueltos
+            </div>
+            <div class="card-body">
+              <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">Resultado listo para copiar al Renombrador o al Sheet</div>
+              <textarea id="cv-output" readonly placeholder="Los resultados aparecen acá..." style="width:100%;min-height:220px;border:1px solid var(--border);border-radius:5px;padding:8px 10px;font-family:'JetBrains Mono',monospace;font-size:11px;resize:vertical;outline:none;background:var(--bg);line-height:1.9;"></textarea>
+              <div id="cv-out-count" style="font-size:10px;color:var(--text-muted);margin-top:4px;font-family:'JetBrains Mono',monospace;">—</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-footer" style="background:#fff;border:1px solid var(--border);border-radius:6px;margin-top:8px;padding:12px 16px;">
+          <button class="btn btn-red" id="cv-btn-conv" onclick="cvConvertir()">
+            <svg viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+            Convertir
+          </button>
+          <button class="btn btn-ghost" id="cv-btn-copy" onclick="cvCopiar()" disabled>
+            <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copiar SKUs
+          </button>
+          <button class="btn btn-ghost" onclick="cvLimpiar()">Limpiar</button>
+        </div>
+
+        <div style="display:none;margin-top:8px;" id="cv-prog-wrap">
+          <div class="progress-wrap"><div class="progress-bar" id="cv-prog-bar" style="width:0%"></div></div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:3px;" id="cv-prog-label"></div>
+        </div>
+
+        <div class="card" style="margin-top:12px;display:none;" id="cv-results-card">
+          <div class="card-header">
+            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            <span id="cv-results-header">Detalle</span>
+          </div>
+          <div style="display:flex;gap:8px;padding:12px 16px;border-bottom:1px solid var(--border);flex-wrap:wrap;" id="cv-stats-row"></div>
+          <div style="overflow-x:auto;">
+            <table class="tbl">
+              <thead><tr><th>#</th><th>Código ingresado</th><th>SKU interno</th><th>Estado</th></tr></thead>
+              <tbody id="cv-tbl-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
     </div><!-- /main -->
   </div><!-- /body -->
 
@@ -562,7 +760,7 @@ function showTool(id, el) {
   el.classList.add('active');
   document.querySelectorAll('.tool-view').forEach(t => t.classList.remove('active'));
   document.getElementById('tool-' + id).classList.add('active');
-  const names = { renombrador:'Renombrador', lotes:'Lotes', listador:'Listador' };
+  const names = { renombrador:'Renombrador', renfotos:'Renombrador de Fotos', conversor:'Conversor de Códigos', lotes:'Lotes', listador:'Listador' };
   document.getElementById('breadcrumb-current').textContent = names[id];
   setStatus('Listo · seleccioná una carpeta para empezar');
   renderLastChip(id === 'renombrador' ? 'ren' : id === 'lotes' ? 'lot' : 'lst');
@@ -833,6 +1031,353 @@ function downloadListado() {
 
 // Cargar chips al iniciar
 renderLastChip('ren');
+
+// ══════════════════════════════════════════════════════
+// HERRAMIENTA 4: RENOMBRADOR DE FOTOS
+// ══════════════════════════════════════════════════════
+let rfPhotos = [], rfGroups = [], rfSelected = [], rfSortable = null;
+
+function rfDragOver(e) { e.preventDefault(); document.getElementById('rf-dropzone').classList.add('dragover'); }
+function rfDragLeave()  { document.getElementById('rf-dropzone').classList.remove('dragover'); }
+function rfDrop(e) {
+  e.preventDefault(); rfDragLeave();
+  const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/') || f.name.toLowerCase().endsWith('.heic'));
+  rfLoadFiles(files);
+}
+
+function rfLoadFiles(files) {
+  if (!files.length) return;
+  files.sort((a,b) => a.name.localeCompare(b.name, undefined, { numeric:true }));
+  rfPhotos = []; rfGroups = []; rfSelected = [];
+  Promise.all(files.map(f => new Promise(res => {
+    const r = new FileReader();
+    r.onload = e => res({ file:f, url:e.target.result, name:f.name });
+    r.readAsDataURL(f);
+  }))).then(results => { rfPhotos = results; rfRenderGrid(); rfGoStep(2); });
+}
+
+function rfGoStep(n) {
+  if (n === 3 && !rfValidate()) return;
+  if (n === 3) rfBuildMapping();
+  document.getElementById('rf-panel1').style.display = n === 1 ? '' : 'none';
+  document.getElementById('rf-panel2').style.display = n === 2 ? '' : 'none';
+  document.getElementById('rf-panel3').style.display = n === 3 ? '' : 'none';
+  [1,2,3].forEach(i => {
+    const pill = document.getElementById(`rf-pill${i}`);
+    const state = i < n ? 'done' : i === n ? 'active' : 'idle';
+    const s = state === 'active' ? { bg:'var(--red)',color:'#fff',border:'var(--red)' } : state === 'done' ? { bg:'#d1e7dd',color:'#0a3622',border:'#a3cfbb' } : { bg:'#fff',color:'var(--text-muted)',border:'var(--border)' };
+    pill.style.background = s.bg; pill.style.color = s.color; pill.style.borderColor = s.border;
+    const numEl = pill.querySelector('div');
+    if (state === 'active') { numEl.style.background = 'rgba(255,255,255,0.3)'; numEl.style.color = '#fff'; }
+    else if (state === 'done') { numEl.style.background = '#0a3622'; numEl.style.color = '#fff'; }
+    else { numEl.style.background = 'var(--border)'; numEl.style.color = 'var(--text-muted)'; }
+  });
+  [1,2].forEach(i => {
+    const sep = document.getElementById(`rf-sep${i}`);
+    const color = i < n ? '#a3cfbb' : i === n ? 'var(--red)' : 'var(--border)';
+    sep.style.borderLeftColor = color;
+  });
+  window.scrollTo(0,0);
+}
+
+function rfGetCodes() {
+  return document.getElementById('rf-codes-ta').value.split('\n').map(l=>l.trim()).filter(l=>l.length>0);
+}
+
+function rfRenderCodeList() {
+  const codes = rfGetCodes();
+  document.getElementById('rf-codes-count').textContent = `${codes.length} código${codes.length!==1?'s':''}`;
+  const list = document.getElementById('rf-code-list');
+  list.innerHTML = '';
+  codes.forEach((code, i) => {
+    const assigned = i < rfGroups.length;
+    const valid = /^\d{13}$/.test(code);
+    const div = document.createElement('div');
+    div.style.cssText = `display:flex;align-items:center;gap:6px;padding:3px 5px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:10px;${assigned?'background:#d1e7dd;':''}`;
+    div.innerHTML = `<div style="width:18px;height:18px;border-radius:50%;background:${assigned?'#0a3622':'var(--border)'};color:${assigned?'#fff':'var(--text-muted)'};font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${i+1}</div><span style="color:${valid?'var(--text-dark)':'var(--red);text-decoration:line-through'}">${code}</span>${assigned?`<span style="margin-left:auto;font-size:9px;font-weight:700;color:#0a3622;">${rfGroups[i].photoIndices.length}f</span>`:''}`;
+    list.appendChild(div);
+  });
+  rfUpdateStatus();
+  rfCheckReady();
+}
+
+function rfRenderGrid() {
+  const grid = document.getElementById('rf-photo-grid');
+  grid.innerHTML = '';
+  document.getElementById('rf-photo-count').textContent = `${rfPhotos.length} fotos`;
+
+  rfPhotos.forEach((p, i) => {
+    const grpInfo = rfGetPhotoGroup(i);
+    const isSel = rfSelected.includes(i);
+    const card = document.createElement('div');
+    card.style.cssText = `background:#fff;border:2px solid ${isSel?'var(--red)':grpInfo?'#a3cfbb':'var(--border)'};border-radius:8px;overflow:hidden;cursor:${grpInfo?'default':'pointer'};position:relative;user-select:none;`;
+    const img = document.createElement('img');
+    img.src = p.url; img.style.cssText = 'width:100%;aspect-ratio:1;object-fit:cover;display:block;pointer-events:none;';
+    const nm = document.createElement('div');
+    nm.style.cssText = 'font-size:8px;font-family:"JetBrains Mono",monospace;color:var(--text-muted);padding:3px 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-top:1px solid var(--border);';
+    nm.textContent = p.name;
+    card.appendChild(img); card.appendChild(nm);
+    if (grpInfo) {
+      const b = document.createElement('div');
+      b.style.cssText = 'position:absolute;top:4px;right:4px;background:#0a3622;color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:10px;font-family:"JetBrains Mono",monospace;';
+      b.textContent = `G${grpInfo.groupIdx+1}`;
+      const code = rfGroups[grpInfo.groupIdx].code;
+      const ext = rfGetExt(p.name);
+      const nn = grpInfo.posInGroup === 0 ? `${code}${ext}` : `${code}-${grpInfo.posInGroup+1}${ext}`;
+      const nb = document.createElement('div');
+      nb.style.cssText = 'position:absolute;bottom:18px;left:2px;right:2px;background:rgba(10,54,34,0.85);color:#fff;font-size:8px;padding:1px 3px;border-radius:2px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:"JetBrains Mono",monospace;';
+      nb.textContent = nn;
+      card.appendChild(b); card.appendChild(nb);
+    } else if (isSel) {
+      const b = document.createElement('div');
+      b.style.cssText = 'position:absolute;top:4px;left:4px;background:var(--red);color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:10px;';
+      b.textContent = rfSelected.indexOf(i)+1;
+      card.appendChild(b);
+    }
+    if (!grpInfo) card.onclick = () => rfToggleSel(i);
+    grid.appendChild(card);
+  });
+
+  if (rfSortable) rfSortable.destroy();
+  if (typeof Sortable !== 'undefined') {
+    rfSortable = Sortable.create(grid, {
+      animation:120, ghostClass:'sortable-ghost',
+      filter: (e, el) => el.style.cursor === 'default',
+      onEnd: evt => {
+        if (evt.oldIndex === evt.newIndex) return;
+        const moved = rfPhotos.splice(evt.oldIndex,1)[0];
+        rfPhotos.splice(evt.newIndex,0,moved);
+        rfSelected = [];
+        rfRenderGrid(); rfUpdateToolbar();
+      }
+    });
+  }
+}
+
+function rfGetPhotoGroup(idx) {
+  for (let g=0;g<rfGroups.length;g++) { const pos=rfGroups[g].photoIndices.indexOf(idx); if(pos!==-1) return {groupIdx:g,posInGroup:pos}; }
+  return null;
+}
+
+function rfToggleSel(i) {
+  const pos = rfSelected.indexOf(i);
+  if (pos===-1) rfSelected.push(i); else rfSelected.splice(pos,1);
+  rfUpdateToolbar(); rfRenderGrid();
+}
+
+function rfUpdateToolbar() {
+  const n = rfSelected.length;
+  const codes = rfGetCodes();
+  const hasCode = rfGroups.length < codes.length;
+  setStatus(n > 0 ? `${n} foto${n!==1?'s':''} seleccionada${n!==1?'s':''} · ${hasCode?'Crear grupo disponible':'No hay más códigos — agregá en el panel izquierdo'}` : 'Seleccioná las fotos de un producto y creá un grupo');
+  let tb = document.getElementById('rf-float-tb');
+  if (!tb) {
+    tb = document.createElement('div');
+    tb.id = 'rf-float-tb';
+    tb.style.cssText = 'position:fixed;bottom:40px;left:50%;transform:translateX(-50%);background:var(--text-dark);color:#fff;border-radius:40px;padding:10px 20px;display:flex;align-items:center;gap:12px;box-shadow:0 8px 24px rgba(0,0,0,0.25);font-size:12px;z-index:300;white-space:nowrap;transition:opacity 0.2s,transform 0.2s;';
+    document.body.appendChild(tb);
+  }
+  if (n === 0) { tb.style.opacity='0'; tb.style.pointerEvents='none'; return; }
+  tb.style.opacity='1'; tb.style.pointerEvents='';
+  tb.innerHTML = `<span style="color:#adb5bd;">${n} foto${n!==1?'s':''}</span>
+    <button onclick="rfCreateGroup()" style="background:var(--red);color:#fff;padding:6px 16px;border-radius:20px;border:none;font-family:'Poppins',sans-serif;font-size:11px;font-weight:600;cursor:pointer;" ${!hasCode?'disabled':''}>Crear grupo</button>
+    <button onclick="rfClearSel()" style="background:rgba(255,255,255,0.12);color:#fff;padding:6px 12px;border-radius:20px;border:none;font-family:'Poppins',sans-serif;font-size:11px;font-weight:600;cursor:pointer;">Cancelar</button>`;
+}
+
+function rfClearSel() { rfSelected=[]; rfUpdateToolbar(); rfRenderGrid(); }
+
+function rfCreateGroup() {
+  if (!rfSelected.length) return;
+  const codes = rfGetCodes();
+  const nextCode = codes[rfGroups.length];
+  if (!nextCode) return;
+  rfGroups.push({ photoIndices:[...rfSelected], code:nextCode });
+  rfClearSel();
+  rfRenderGrid(); rfRenderGroupsSummary(); rfRenderCodeList();
+}
+
+function rfUndoGroup(idx) {
+  rfGroups.splice(idx,1);
+  rfRenderGrid(); rfRenderGroupsSummary(); rfRenderCodeList();
+}
+
+function rfRenderGroupsSummary() {
+  const area = document.getElementById('rf-groups-summary');
+  area.innerHTML = '';
+  rfGroups.forEach((g,gi) => {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #a3cfbb;border-radius:6px;padding:7px 12px;font-size:11px;';
+    const thumbs = g.photoIndices.slice(0,4).map(pi=>`<img src="${rfPhotos[pi].url}" style="width:24px;height:24px;object-fit:cover;border-radius:3px;border:1px solid var(--border);">`).join('');
+    const undo = gi===rfGroups.length-1 ? `<button onclick="rfUndoGroup(${gi})" style="margin-left:auto;background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:13px;" title="Deshacer">↩</button>` : '';
+    row.innerHTML = `<div style="width:22px;height:22px;border-radius:50%;background:#0a3622;color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${gi+1}</div><span style="font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--text-dark);">${g.code}</span><span style="color:var(--text-muted);">${g.photoIndices.length} toma${g.photoIndices.length!==1?'s':''}</span><div style="display:flex;gap:2px;">${thumbs}</div>${undo}`;
+    area.appendChild(row);
+  });
+}
+
+function rfUpdateStatus() {
+  const codes = rfGetCodes(), ng = rfGroups.length, nc = codes.length;
+  const banner = document.getElementById('rf-status-banner');
+  if (nc===0 && ng===0) { banner.style.display='none'; return; }
+  banner.style.display='flex';
+  if (ng===nc && nc>0) {
+    banner.style.cssText='display:flex;margin-top:12px;padding:12px 14px;border-radius:6px;font-size:12px;font-weight:500;align-items:center;gap:10px;background:var(--green-bg);color:var(--green-text);border:1px solid #a3cfbb;';
+    banner.innerHTML=`<span>✅</span><span><strong>Todo listo.</strong> ${ng} grupos = ${nc} códigos.</span>`;
+  } else if (ng<nc) {
+    banner.style.cssText='display:flex;margin-top:12px;padding:12px 14px;border-radius:6px;font-size:12px;font-weight:500;align-items:center;gap:10px;background:var(--bg);color:var(--text-muted);border:1px solid var(--border);';
+    banner.innerHTML=`<span>⏳</span><span>Grupo <strong>${ng}</strong> de <strong>${nc}</strong>. Faltan ${nc-ng}.</span>`;
+  } else {
+    banner.style.cssText='display:flex;margin-top:12px;padding:12px 14px;border-radius:6px;font-size:12px;font-weight:500;align-items:center;gap:10px;background:var(--red-bg);color:var(--red-text);border:1px solid #f5c2c7;';
+    banner.innerHTML=`<span>❌</span><span>Hay <strong>${ng} grupos</strong> pero solo <strong>${nc} códigos</strong>.</span>`;
+  }
+}
+
+function rfCheckReady() {
+  const codes=rfGetCodes(), ok=rfGroups.length>0&&rfGroups.length===codes.length&&codes.every(c=>/^\d{13}$/.test(c));
+  document.getElementById('rf-btn-step3').disabled=!ok;
+}
+
+function rfValidate() {
+  const codes=rfGetCodes();
+  if (!rfGroups.length) { alert('Creá al menos un grupo.'); return false; }
+  if (rfGroups.length!==codes.length) { alert(`Grupos (${rfGroups.length}) ≠ códigos (${codes.length}).`); return false; }
+  if (codes.some(c=>!/^\d{13}$/.test(c))) { alert('Hay códigos con formato inválido.'); return false; }
+  return true;
+}
+
+function rfBuildMapping() {
+  const body=document.getElementById('rf-map-body'); body.innerHTML='';
+  let total=0;
+  rfGroups.forEach((g,gi) => {
+    g.photoIndices.forEach((pi,ti) => {
+      const p=rfPhotos[pi], ext=rfGetExt(p.name);
+      const nn=ti===0?`${g.code}${ext}`:`${g.code}-${ti+1}${ext}`;
+      total++;
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td><img src="${p.url}" style="width:28px;height:28px;object-fit:cover;border-radius:3px;border:1px solid var(--border);"></td><td class="mono">${esc(p.name)}</td><td class="arrow">→</td><td class="mono" style="color:var(--green-text);font-weight:600;">${esc(nn)}</td><td><span class="badge badge-ok">G${gi+1}</span></td>`;
+      body.appendChild(tr);
+    });
+  });
+  document.getElementById('rf-p3-summary').innerHTML=`<svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;"><polyline points="20 6 9 17 4 12"/></svg><div><strong>${rfGroups.length} productos · ${total} fotos</strong> listas para descargar. Revisá el orden.</div>`;
+}
+
+async function rfDownloadZip() {
+  if (typeof JSZip === 'undefined') { alert('JSZip no está disponible. Asegurate de tener conexión a internet.'); return; }
+  const btn=document.getElementById('rf-btn-dl'); btn.disabled=true;
+  const pw=document.getElementById('rf-prog-wrap'); pw.style.display='block';
+  const bar=document.getElementById('rf-prog-bar'), label=document.getElementById('rf-prog-label');
+  const zip=new JSZip(), total=rfGroups.reduce((s,g)=>s+g.photoIndices.length,0); let done=0;
+  for (const g of rfGroups) {
+    for (let ti=0;ti<g.photoIndices.length;ti++) {
+      const p=rfPhotos[g.photoIndices[ti]], ext=rfGetExt(p.name);
+      const nn=ti===0?`${g.code}${ext}`:`${g.code}-${ti+1}${ext}`;
+      zip.file(nn,p.file); done++;
+      bar.style.width=Math.round(done/total*100)+'%';
+      label.textContent=`Empaquetando ${done} de ${total}...`;
+      await new Promise(r=>setTimeout(r,0));
+    }
+  }
+  label.textContent='Generando ZIP...';
+  const blob=await zip.generateAsync({type:'blob'},m=>{bar.style.width=m.percent.toFixed(0)+'%';});
+  const d=new Date(), ds=`${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`FotosTate_${ds}.zip`; a.click(); URL.revokeObjectURL(a.href);
+  label.textContent='✅ Descarga completa.'; btn.disabled=false;
+}
+
+function rfGetExt(fn) { const m=fn.match(/(\.[^.]+)$/); return m?m[1].toLowerCase():''; }
+
+// ══════════════════════════════════════════════════════
+// HERRAMIENTA 5: CONVERSOR DE CÓDIGOS
+// ══════════════════════════════════════════════════════
+const CV_API = 'http://192.168.0.9:4200/api/Consulta/sku/proveedor/';
+
+function cvCountInput() {
+  const n = cvParseCodes().length;
+  document.getElementById('cv-in-count').textContent = `${n} código${n!==1?'s':''}`;
+}
+
+function cvParseCodes() {
+  return document.getElementById('cv-input').value.split('\n').map(l=>l.trim()).filter(l=>l.length>0);
+}
+
+async function cvConvertir() {
+  const codes = cvParseCodes();
+  if (!codes.length) { alert('Pegá al menos un código.'); return; }
+  document.getElementById('cv-btn-conv').disabled = true;
+  document.getElementById('cv-btn-copy').disabled = true;
+  document.getElementById('cv-output').value = '';
+  document.getElementById('cv-results-card').style.display = 'none';
+  const pw = document.getElementById('cv-prog-wrap'); pw.style.display = 'block';
+  const bar = document.getElementById('cv-prog-bar'), lbl = document.getElementById('cv-prog-label');
+  const resultados = []; let conv=0, int=0, err=0;
+  for (let i=0; i<codes.length; i++) {
+    const code = codes[i];
+    bar.style.width = Math.round((i/codes.length)*100)+'%';
+    lbl.textContent = `Consultando ${i+1} de ${codes.length}: ${code}`;
+    const res = await cvConsultar(code);
+    resultados.push({code,...res});
+    if (res.tipo==='convertido') conv++; else if (res.tipo==='interno') int++; else err++;
+    document.getElementById('cv-output').value = resultados.map(r=>r.sku||r.code).join('\n');
+  }
+  bar.style.width = '100%';
+  lbl.textContent = `✅ ${codes.length} procesados · ${conv} convertidos · ${int} internos · ${err} no encontrados`;
+  document.getElementById('cv-out-count').textContent = `${resultados.length} SKU${resultados.length!==1?'s':''} resueltos`;
+  document.getElementById('cv-btn-copy').disabled = false;
+  document.getElementById('cv-btn-conv').disabled = false;
+  cvRenderResults(resultados, conv, int, err);
+  setStatus(`Conversor: ${conv} convertidos, ${int} internos, ${err} errores`, err>0?'#CF1E29':'#28a745');
+}
+
+async function cvConsultar(code) {
+  try {
+    const res = await fetch(CV_API + encodeURIComponent(code), { headers:{'Accept':'application/json'} });
+    if (res.ok) {
+      const json = await res.json();
+      if (json && json.sku) {
+        const sku = String(json.sku).trim();
+        return sku === code ? {tipo:'interno',sku:code} : {tipo:'convertido',sku};
+      }
+    }
+    return /^\d{13}$/.test(code) ? {tipo:'interno',sku:code} : {tipo:'error',sku:''};
+  } catch(e) {
+    return /^\d{13}$/.test(code) ? {tipo:'interno',sku:code} : {tipo:'error',sku:''};
+  }
+}
+
+function cvRenderResults(resultados, conv, int, err) {
+  document.getElementById('cv-results-card').style.display = '';
+  document.getElementById('cv-results-header').textContent = `${resultados.length} códigos procesados`;
+  document.getElementById('cv-stats-row').innerHTML = `
+    <span class="badge badge-ok">✅ ${int} internos</span>
+    <span class="badge badge-warn">🔄 ${conv} convertidos</span>
+    ${err>0?`<span class="badge badge-invalid">❌ ${err} no encontrados</span>`:''}`;
+  const body = document.getElementById('cv-tbl-body'); body.innerHTML='';
+  resultados.forEach((r,i) => {
+    const tr = document.createElement('tr');
+    const badge = r.tipo==='convertido'?'<span class="badge badge-warn">🔄 Convertido</span>':r.tipo==='interno'?'<span class="badge badge-ok">✅ Interno</span>':'<span class="badge badge-invalid">❌ No encontrado</span>';
+    const skuCell = r.sku ? `<span class="mono" style="color:var(--green-text);font-weight:600;">${esc(r.sku)}</span>` : '<span style="color:var(--text-muted);">—</span>';
+    tr.innerHTML = `<td>${i+1}</td><td class="mono">${esc(r.code)}</td><td>${skuCell}</td><td>${badge}</td>`;
+    body.appendChild(tr);
+  });
+}
+
+async function cvCopiar() {
+  const txt = document.getElementById('cv-output').value;
+  if (!txt) return;
+  await navigator.clipboard.writeText(txt);
+  const btn = document.getElementById('cv-btn-copy');
+  btn.textContent = '✓ Copiado';
+  setTimeout(()=>{ btn.innerHTML='<svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;stroke-width:2;fill:none;"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copiar SKUs'; }, 2000);
+}
+
+function cvLimpiar() {
+  document.getElementById('cv-input').value='';
+  document.getElementById('cv-output').value='';
+  document.getElementById('cv-in-count').textContent='0 códigos';
+  document.getElementById('cv-out-count').textContent='—';
+  document.getElementById('cv-prog-wrap').style.display='none';
+  document.getElementById('cv-results-card').style.display='none';
+  document.getElementById('cv-btn-copy').disabled=true;
+}
 </script>
 </body>
 </html>
