@@ -92,13 +92,13 @@ body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--t
 /* Columnas con anchos fijos */
 .c-foto  { width: 56px; min-width: 56px; height: 56px; flex-shrink: 0; }
 .c-desc  { flex: 1 1 0; min-width: 0; padding: 0 14px; }
-.c-marca { width: 110px; min-width: 110px; padding: 0 8px; }
-.c-ap    { width: 90px;  min-width: 90px;  padding: 0 8px; }
-.c-ubi   { width: 60px;  min-width: 60px;  padding: 0 8px; }
-.c-fecha { width: 84px;  min-width: 84px;  padding: 0 8px; }
-.c-tipo  { width: 72px;  min-width: 72px;  padding: 0 6px; }
-.c-btns  { width: 220px; min-width: 220px; padding: 0 8px; display: flex; gap: 4px; align-items: center; }
-.c-sw    { width: 90px;  min-width: 90px;  padding: 0 10px; display: flex; align-items: center; gap: 6px; justify-content: flex-end; }
+.c-marca { width: 100px; min-width: 100px; padding: 0 8px; overflow: hidden; }
+.c-ap    { width: 80px;  min-width: 80px;  padding: 0 8px; overflow: hidden; }
+.c-ubi   { width: 56px;  min-width: 56px;  padding: 0 8px; overflow: hidden; }
+.c-fecha { width: 80px;  min-width: 80px;  padding: 0 8px; }
+.c-tipo  { width: 68px;  min-width: 68px;  padding: 0 6px; }
+.c-btns  { width: 260px; min-width: 260px; padding: 0 8px; display: flex; gap: 5px; align-items: center; flex-shrink: 0; }
+.c-sw    { width: 80px;  min-width: 80px;  padding: 0 8px 0 4px; display: flex; align-items: center; gap: 5px; justify-content: flex-end; flex-shrink: 0; }
 
 /* Foto */
 .c-foto {
@@ -131,10 +131,10 @@ body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--t
 /* Botones acción */
 .btn {
   font-family: 'Poppins', sans-serif; font-size: 10px; font-weight: 500;
-  padding: 4px 8px; border-radius: 5px; border: 1px solid var(--border);
+  padding: 5px 9px; border-radius: 5px; border: 1px solid var(--border);
   background: var(--white); color: var(--text-muted); cursor: pointer;
   text-decoration: none; display: inline-flex; align-items: center; gap: 4px;
-  transition: all 0.12s; white-space: nowrap;
+  transition: all 0.12s; white-space: nowrap; flex-shrink: 0;
 }
 .btn:hover { border-color: var(--red); color: var(--red); }
 .btn.rojo { background: var(--red); color: #fff; border-color: var(--red); }
@@ -142,7 +142,7 @@ body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--t
 .btn.ok { background: var(--green-bg); color: var(--green-text); border-color: #a3cfbb; }
 
 /* Switch */
-.sw-lbl { font-size: 9px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; white-space: nowrap; }
+.sw-lbl { font-size: 9px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; white-space: nowrap; flex-shrink: 0; }
 .switch { position: relative; width: 34px; height: 20px; flex-shrink: 0; }
 .switch input { opacity: 0; width: 0; height: 0; }
 .slider { position: absolute; inset: 0; background: var(--switch-off); border-radius: 20px; cursor: pointer; transition: background 0.2s; }
