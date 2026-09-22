@@ -49,18 +49,31 @@ body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--t
 /* ── MODAL ── */
 .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 900; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
 .modal-bg.on { opacity: 1; pointer-events: all; }
-.modal { background: var(--white); border-radius: 12px; padding: 28px 32px; max-width: 480px; width: 90%; box-shadow: 0 12px 40px rgba(0,0,0,0.18); }
+.modal { background: var(--white); border-radius: 12px; padding: 28px 32px; max-width: 520px; width: 90%; box-shadow: 0 12px 40px rgba(0,0,0,0.18); max-height: 90vh; overflow-y: auto; }
 .modal h3 { font-size: 16px; font-weight: 700; color: var(--text-dark); margin-bottom: 10px; }
 .modal p  { font-size: 13px; color: var(--text); line-height: 1.6; margin-bottom: 12px; }
-.modal ol { font-size: 13px; color: var(--text); line-height: 1.8; padding-left: 20px; margin-bottom: 16px; }
-.modal ol li { margin-bottom: 4px; }
 .modal code { font-family: 'JetBrains Mono', monospace; font-size: 12px; background: var(--bg); padding: 2px 6px; border-radius: 4px; border: 1px solid var(--border); color: var(--text-dark); }
-.modal-btns { display: flex; gap: 8px; justify-content: flex-end; margin-top: 8px; }
+.modal-btns { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
 .modal-btns button { font-family: 'Poppins', sans-serif; font-size: 12px; font-weight: 500; padding: 7px 16px; border-radius: 6px; border: 1px solid var(--border); cursor: pointer; transition: all 0.12s; }
 .modal-btns .btn-sec { background: var(--white); color: var(--text-muted); }
 .modal-btns .btn-sec:hover { border-color: var(--red); color: var(--red); }
-.modal-btns .btn-prim { background: var(--red); color: #fff; border-color: var(--red); }
-.modal-btns .btn-prim:hover { background: var(--red-dark); }
+.modal-btns .btn-prim { background: #0066cc; color: #fff; border-color: #0066cc; }
+.modal-btns .btn-prim:hover { background: #0052a3; }
+.modal-btns .btn-prim:disabled { background: #aaa; border-color: #aaa; cursor: wait; }
+
+/* Barra de progreso del modal */
+.cache-progress { margin: 16px 0; }
+.cache-progress-bar-bg { width: 100%; height: 6px; background: var(--border); border-radius: 6px; overflow: hidden; }
+.cache-progress-bar { height: 100%; background: #0066cc; border-radius: 6px; transition: width 0.4s; width: 0%; }
+.cache-progress-txt { font-size: 11px; color: var(--text-muted); margin-top: 6px; }
+.cache-stats { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; font-size: 12px; margin-top: 12px; display: none; }
+.cache-stats.visible { display: block; }
+.cache-stats b { color: var(--text-dark); }
+.cache-log { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-muted); background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; max-height: 120px; overflow-y: auto; margin-top: 10px; display: none; }
+.cache-log.visible { display: block; }
+.cache-log p { margin-bottom: 3px; }
+.cache-log p.ok  { color: #198754; }
+.cache-log p.err { color: var(--red); }
 
 /* ── TOOLBAR ── */
 .toolbar {
@@ -125,14 +138,12 @@ body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--t
   border-right: 1px solid var(--border);
 }
 .c-foto img { width: 100%; height: 100%; object-fit: contain; padding: 4px; }
-.c-foto .sk { width: 100%; height: 100%; background: linear-gradient(90deg,#eee 25%,#f5f5f5 50%,#eee 75%); background-size: 200% 100%; animation: shimmer 1.2s infinite; }
 .c-foto .nf { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; color: var(--border); }
 @keyframes shimmer { to { background-position: -200% 0; } }
 
 /* Descripción */
 .desc-txt { font-size: 12px; font-weight: 600; color: var(--text-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .desc-sku { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-muted); margin-top: 2px; }
-.sk-line { height: 9px; background: #e8e8e8; border-radius: 4px; }
 
 /* Chips de datos */
 .chip-lbl { font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; color: var(--text-muted); display: block; margin-bottom: 1px; }
@@ -226,20 +237,31 @@ body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--t
 <div class="modal-bg" id="modalCache" onclick="cerrarModalCache(event)">
   <div class="modal" onclick="event.stopPropagation()">
     <h3>📦 Actualizar caché de productos</h3>
-    <p>La caché almacena la descripción, marca, AP, ubicación y foto de cada SKU para que la herramienta cargue rápido.</p>
-    <p>Para actualizarla con los SKUs nuevos que agregaste a la hoja Físico:</p>
-    <ol>
-      <li>Abrí el <b>Google Sheet</b> del Gestor Ecommerce</li>
-      <li>Hacé clic en el menú <b>Extensiones → Apps Script</b></li>
-      <li>En el editor, seleccioná la función <code>llenarCache</code></li>
-      <li>Presioná el botón <b>▶ Ejecutar</b></li>
-      <li>Esperá a que termine (puede tardar varios minutos según la cantidad de SKUs nuevos)</li>
-      <li>Volvé acá y presioná <b>Actualizar</b> para recargar los datos</li>
-    </ol>
-    <p style="font-size:12px;color:var(--text-muted)">Solo necesitás hacer esto cuando agregás productos nuevos a la hoja.</p>
+    <p id="cacheEstadoDesc">
+      Este proceso consulta la API de Tate para obtener la descripción, marca, AP, ubicación y foto de cada SKU nuevo en la hoja Físico, y los guarda en la hoja <b>Cache</b>.
+    </p>
+
+    <!-- Stats previas al inicio -->
+    <div class="cache-stats" id="cacheStats">
+      <div id="cacheStatsTexto"></div>
+    </div>
+
+    <!-- Barra de progreso (visible solo mientras corre) -->
+    <div class="cache-progress" id="cacheProgressWrap" style="display:none">
+      <div class="cache-progress-bar-bg">
+        <div class="cache-progress-bar" id="cacheProgressBar"></div>
+      </div>
+      <div class="cache-progress-txt" id="cacheProgressTxt">Iniciando…</div>
+    </div>
+
+    <!-- Log -->
+    <div class="cache-log" id="cacheLog"></div>
+
     <div class="modal-btns">
-      <button class="btn-sec" onclick="cerrarModalCache()">Cerrar</button>
-      <button class="btn-prim" onclick="cargarDatos();cerrarModalCache()">Actualizar vista ahora</button>
+      <button class="btn-sec" id="btnCerrarCache" onclick="cerrarModalCache()">Cerrar</button>
+      <button class="btn-prim" id="btnIniciarCache" onclick="iniciarActualizacionCache()">
+        Verificar y actualizar
+      </button>
     </div>
   </div>
 </div>
@@ -303,27 +325,233 @@ body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--t
 <script>
 const WEBAPP   = 'https://script.google.com/a/macros/tate.com.ar/s/AKfycbwQ5dWCPQPDUINwpqcjn60W86dbX3N08iLsauqU8u8MR2y86mo4ECBl3G5P6r0tRhTZ/exec';
 const APP_URL  = 'http://192.168.0.9:4013';
+const API_BASE = 'http://192.168.0.9:4200';
 
 let todos  = [];
 let fEst   = 'todos';
 let fTipo  = 'todos';
 
-// ── MODAL CACHÉ ─────────────────────────────────────────────────
+// Normaliza SKU a 13 dígitos (mismo que Apps Script)
+function normSku(v) {
+  return String(v || '').trim().replace(/\D/g, '').padStart(13, '0');
+}
+
+// ── MODAL CACHÉ ──────────────────────────────────────────────────
+let cacheRunning = false;
+
 function abrirModalCache() {
   document.getElementById('modalCache').classList.add('on');
+  // Resetear estado visual si no está corriendo
+  if (!cacheRunning) {
+    document.getElementById('cacheStats').classList.remove('visible');
+    document.getElementById('cacheProgressWrap').style.display = 'none';
+    document.getElementById('cacheLog').classList.remove('visible');
+    document.getElementById('cacheLog').innerHTML = '';
+    document.getElementById('btnIniciarCache').disabled = false;
+    document.getElementById('btnIniciarCache').textContent = 'Verificar y actualizar';
+    document.getElementById('cacheEstadoDesc').innerHTML =
+      'Este proceso consulta la API de Tate para obtener la descripción, marca, AP, ' +
+      'ubicación y foto de cada SKU nuevo en la hoja Físico, y los guarda en la hoja <b>Cache</b>.';
+  }
 }
+
 function cerrarModalCache(e) {
   if (e && e.target !== e.currentTarget) return;
+  if (cacheRunning) return; // No cerrar mientras corre
   document.getElementById('modalCache').classList.remove('on');
 }
+
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
-    document.getElementById('modalCache').classList.remove('on');
+    if (!cacheRunning) {
+      document.getElementById('modalCache').classList.remove('on');
+    }
     lbCerrar(null);
   }
 });
 
-// ── CARGA ───────────────────────────────────────────────────────
+// ── ACTUALIZAR CACHÉ DESDE EL BROWSER ───────────────────────────
+// Flujo:
+// 1. GET webapp?accion=skus  → lista de SKUs que faltan en la caché
+// 2. Para cada SKU: fetch a la API local (mismo navegador, misma red)
+// 3. POST a la webapp con los datos → escribe en la hoja Cache (en lotes)
+
+function logCache(msg, tipo) {
+  const log = document.getElementById('cacheLog');
+  log.classList.add('visible');
+  const p = document.createElement('p');
+  if (tipo) p.className = tipo;
+  p.textContent = msg;
+  log.appendChild(p);
+  log.scrollTop = log.scrollHeight;
+}
+
+function setBarraCache(pct, txt) {
+  document.getElementById('cacheProgressBar').style.width = pct + '%';
+  document.getElementById('cacheProgressTxt').textContent = txt;
+}
+
+async function iniciarActualizacionCache() {
+  if (cacheRunning) return;
+  cacheRunning = true;
+
+  const btnIniciar = document.getElementById('btnIniciarCache');
+  const btnCerrar  = document.getElementById('btnCerrarCache');
+  btnIniciar.disabled = true;
+  btnIniciar.textContent = 'Ejecutando…';
+  btnCerrar.disabled = true;
+
+  document.getElementById('cacheProgressWrap').style.display = 'block';
+  document.getElementById('cacheLog').innerHTML = '';
+  document.getElementById('cacheLog').classList.remove('visible');
+  setBarraCache(0, 'Consultando qué SKUs faltan en la caché…');
+
+  try {
+    // ── Paso 1: obtener la lista de SKUs nuevos ──────────────────
+    logCache('Consultando hoja Físico y caché existente…');
+    const skuRes = await jsonpGet(WEBAPP + '?accion=skus&callback=__skuCb');
+
+    if (skuRes.error) {
+      logCache('Error: ' + skuRes.error, 'err');
+      throw new Error(skuRes.error);
+    }
+
+    const { skus, total, enCache, nuevos } = skuRes;
+
+    document.getElementById('cacheStats').classList.add('visible');
+    document.getElementById('cacheStatsTexto').innerHTML =
+      `<b>${total}</b> SKUs únicos en la hoja · <b>${enCache}</b> ya en caché · <b>${nuevos}</b> nuevos a consultar`;
+
+    if (!skus || skus.length === 0) {
+      setBarraCache(100, '¡La caché ya está al día!');
+      logCache('✓ No hay SKUs nuevos para agregar a la caché.', 'ok');
+      btnIniciar.textContent = '✓ Al día';
+      btnCerrar.disabled = false;
+      cacheRunning = false;
+      return;
+    }
+
+    logCache(`Se consultarán ${skus.length} SKUs nuevos a la API local…`);
+
+    // ── Paso 2: probar que la API local sea accesible ────────────
+    setBarraCache(2, 'Probando conexión con la API local…');
+    try {
+      const testUrl = API_BASE + '/api/Consulta/limpio/' + encodeURIComponent(skus[0]) + '/0001-';
+      const testR = await fetch(testUrl, { headers: { Accept: 'application/json' } });
+      if (!testR.ok) throw new Error('HTTP ' + testR.status);
+      logCache('✓ API local accesible.', 'ok');
+    } catch(err) {
+      logCache('✗ No se puede llegar a la API local: ' + err.message, 'err');
+      logCache('Asegurate de estar en la red de Tate y que el servidor esté encendido.', 'err');
+      throw new Error('API local inaccesible: ' + err.message);
+    }
+
+    // ── Paso 3: consultar cada SKU en lotes de 5 ─────────────────
+    const LOTE    = 5;
+    const LOTE_WR = 30;   // guardar en el sheet cada N items obtenidos
+    let   items   = [];
+    let   ok = 0, err = 0;
+
+    for (let i = 0; i < skus.length; i += LOTE) {
+      const lote = skus.slice(i, i + LOTE);
+      const pct  = Math.round((i / skus.length) * 85) + 5;
+      setBarraCache(pct, `Consultando SKU ${i + 1}–${Math.min(i + LOTE, skus.length)} de ${skus.length}…`);
+
+      // Consultas en paralelo dentro del lote
+      const promises = lote.map(async sku => {
+        try {
+          const url = API_BASE + '/api/Consulta/limpio/' + encodeURIComponent(sku) + '/0001-';
+          const r   = await fetch(url, { headers: { Accept: 'application/json' } });
+          if (!r.ok) throw new Error('HTTP ' + r.status);
+          const j   = await r.json();
+          if (!Array.isArray(j)) throw new Error('Respuesta no es array');
+          const b1  = j.find(b => b.ds1);
+          const b4  = j.find(b => b.ds4);
+          const d   = b1 && b1.ds1 && b1.ds1[0];
+          return {
+            sku,
+            desc:  d && d.Descripcion ? d.Descripcion.trim() : '',
+            marca: d && d.Marca ? d.Marca.replace(/\s*\[\d+\]\s*$/, '').trim() : '',
+            ap:    d && d.ArtProv   ? d.ArtProv.trim()   : '',
+            ubi:   d && d.Ubicacion ? d.Ubicacion.trim() : '',
+            foto:  b4 && b4.ds4 && b4.ds4[0] ? (b4.ds4[0].Imagen || '') : '',
+          };
+        } catch(e) {
+          logCache('✗ Error SKU ' + sku + ': ' + e.message, 'err');
+          err++;
+          return { sku, desc: '', marca: '', ap: '', ubi: '', foto: '' };
+        }
+      });
+
+      const resultados = await Promise.all(promises);
+      resultados.forEach(item => {
+        if (item.desc || item.marca) ok++;
+        items.push(item);
+      });
+
+      // Guardar en el sheet cada LOTE_WR items
+      if (items.length >= LOTE_WR) {
+        await guardarItemsEnSheet(items);
+        logCache(`✓ Guardados ${items.length} items en la hoja Cache (total ok: ${ok}).`, 'ok');
+        items = [];
+      }
+    }
+
+    // Guardar lo que queda
+    if (items.length > 0) {
+      await guardarItemsEnSheet(items);
+      logCache(`✓ Guardados ${items.length} items finales (total ok: ${ok}).`, 'ok');
+    }
+
+    setBarraCache(100, `¡Listo! ${skus.length} SKUs procesados · ${ok} con datos · ${err} errores`);
+    logCache(`Proceso completado. ${skus.length} SKUs procesados, ${ok} con datos, ${err} errores.`, 'ok');
+    btnIniciar.textContent = '✓ Completado';
+    toast('¡Caché actualizada! Recargá los datos.', 'ok');
+
+  } catch(e) {
+    setBarraCache(0, 'Error: ' + e.message);
+    btnIniciar.textContent = 'Reintentar';
+    btnIniciar.disabled = false;
+    toast('Error al actualizar la caché', 'err');
+  } finally {
+    btnCerrar.disabled = false;
+    cacheRunning = false;
+  }
+}
+
+// Envía items al sheet via POST a la webapp
+async function guardarItemsEnSheet(items) {
+  const r = await fetch(WEBAPP, {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify({ accion: 'guardarCache', items }),
+  });
+  if (!r.ok) throw new Error('Error al guardar en el sheet: HTTP ' + r.status);
+  const j = await r.json();
+  if (!j.ok) throw new Error('Error de la webapp: ' + (j.error || 'desconocido'));
+}
+
+// Helper: JSONP promise
+function jsonpGet(url) {
+  return new Promise((resolve, reject) => {
+    const cbName = '__jcb_' + Date.now();
+    const s = document.createElement('script');
+    const t = setTimeout(() => {
+      s.remove(); delete window[cbName];
+      reject(new Error('Timeout en JSONP'));
+    }, 30000);
+    window[cbName] = function(data) {
+      clearTimeout(t); s.remove(); delete window[cbName];
+      resolve(data);
+    };
+    // Reemplaza el placeholder del callback en la URL
+    s.src = url.replace('__skuCb', cbName);
+    s.onerror = () => { clearTimeout(t); s.remove(); delete window[cbName]; reject(new Error('Error de red')); };
+    document.body.appendChild(s);
+  });
+}
+
+// ── CARGA DE DATOS ───────────────────────────────────────────────
 function cargarDatos() {
   spin(true);
   setEstado('cargando');
@@ -338,7 +566,6 @@ function cargarDatos() {
     setEstado('error', 'Tiempo de espera agotado (60s). El servidor puede estar ocupado — intentá de nuevo.');
   }, 60000);
 
-  // Progreso animado mientras espera
   let pct = 0;
   const intervalo = setInterval(() => {
     pct = Math.min(pct + 3, 90);
