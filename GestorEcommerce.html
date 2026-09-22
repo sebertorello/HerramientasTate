@@ -199,6 +199,86 @@ body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--t
 .toast.ok  { background: #198754; }
 .toast.err { background: #dc3545; }
 
+/* ── ALERTA CONTENIDO MIXTO ── */
+.alerta-mixta {
+  display: none;
+  background: #fff3cd; border-bottom: 2px solid #ffc107;
+  padding: 10px 24px; font-size: 12px; color: #664d03;
+  align-items: center; gap: 12px; flex-wrap: wrap;
+}
+.alerta-mixta.visible { display: flex; }
+.alerta-mixta strong { font-weight: 700; }
+.alerta-mixta a { color: #0066cc; font-weight: 600; text-decoration: none; }
+.alerta-mixta a:hover { text-decoration: underline; }
+.alerta-mixta .am-icon { font-size: 18px; flex-shrink: 0; }
+
+/* Celda de foto con link (modo mixto) */
+.c-foto .foto-link {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  width: 100%; height: 100%; gap: 3px; text-decoration: none;
+  color: #0066cc; font-size: 9px; font-weight: 600;
+  transition: background 0.1s;
+}
+.c-foto .foto-link:hover { background: var(--blue-bg); }
+.c-foto .foto-link svg { opacity: 0.7; }
+
+/* ── TAGS ── */
+.tag-dot {
+  display: inline-block; width: 10px; height: 10px; border-radius: 50%;
+  margin-left: 5px; vertical-align: middle; cursor: pointer;
+  border: 1.5px solid rgba(0,0,0,0.15);
+  transition: transform 0.12s; flex-shrink: 0;
+}
+.tag-dot:hover { transform: scale(1.4); }
+.tags-row { display: inline-flex; align-items: center; gap: 3px; }
+
+/* Panel flotante de asignación de tags */
+.tag-panel {
+  position: fixed; background: var(--white); border: 1px solid var(--border);
+  border-radius: 10px; box-shadow: 0 8px 32px rgba(0,0,0,0.16);
+  padding: 12px; z-index: 800; min-width: 180px; max-width: 240px;
+  display: none;
+}
+.tag-panel.on { display: block; }
+.tag-panel h4 { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+.tag-panel-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 4px; border-radius: 5px; cursor: pointer;
+  font-size: 12px; color: var(--text-dark); transition: background 0.1s;
+}
+.tag-panel-item:hover { background: var(--bg); }
+.tag-panel-item .tp-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; border: 1.5px solid rgba(0,0,0,0.15); }
+.tag-panel-item .tp-check { margin-left: auto; font-size: 11px; color: var(--red); font-weight: 700; opacity: 0; }
+.tag-panel-item.activo .tp-check { opacity: 1; }
+.tag-panel-empty { font-size: 11px; color: var(--text-muted); padding: 4px; }
+.tag-panel-footer { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; }
+.tag-panel-footer button { font-family: 'Poppins', sans-serif; font-size: 11px; padding: 4px 10px; border-radius: 5px; border: 1px solid var(--border); background: var(--white); color: var(--text-muted); cursor: pointer; }
+.tag-panel-footer button:hover { border-color: var(--red); color: var(--red); }
+
+/* Modal gestión de tags */
+.tags-list-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 10px; border-radius: 7px; border: 1px solid var(--border);
+  margin-bottom: 6px; background: var(--white);
+}
+.tags-list-item .tli-dot { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; border: 1.5px solid rgba(0,0,0,0.12); }
+.tags-list-item .tli-nombre { font-size: 13px; font-weight: 500; flex: 1; color: var(--text-dark); }
+.tags-list-item .tli-btns { display: flex; gap: 4px; }
+.tags-list-item .tli-btns button { font-family: 'Poppins',sans-serif; font-size: 10px; padding: 3px 8px; border-radius: 4px; border: 1px solid var(--border); cursor: pointer; background: var(--white); color: var(--text-muted); }
+.tags-list-item .tli-btns button:hover { border-color: var(--red); color: var(--red); }
+.tag-form { display: flex; gap: 6px; align-items: center; margin-top: 12px; flex-wrap: wrap; }
+.tag-form input[type="color"] { width: 32px; height: 32px; border: 1px solid var(--border); border-radius: 5px; cursor: pointer; padding: 2px; }
+.tag-form input[type="text"] { font-family: 'Poppins',sans-serif; font-size: 12px; border: 1px solid var(--border); border-radius: 5px; padding: 5px 9px; flex: 1; min-width: 100px; outline: none; color: var(--text-dark); }
+.tag-form input[type="text"]:focus { border-color: var(--red); }
+.tag-form button { font-family: 'Poppins',sans-serif; font-size: 12px; padding: 5px 12px; border-radius: 5px; border: none; background: var(--red); color: #fff; cursor: pointer; white-space: nowrap; }
+.tag-form button:hover { background: var(--red-dark); }
+.tag-form button.cancel { background: var(--white); color: var(--text-muted); border: 1px solid var(--border); }
+.tag-form button.cancel:hover { border-color: var(--red); color: var(--red); }
+
+/* pill con punto de color (filtro de tags) */
+.pill-tag { display: flex; align-items: center; gap: 4px; }
+.pill-tag .pt-dot { width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid rgba(0,0,0,0.15); flex-shrink: 0; }
+
 /* ── FOOTER ── */
 .footer { background: var(--text-dark); color: #adb5bd; text-align: center; padding: 18px; font-size: 11px; margin-top: 40px; }
 .footer b { color: #fff; }
@@ -213,6 +293,18 @@ body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--t
 </head>
 <body>
 
+<!-- Alerta contenido mixto: se muestra si la página está en HTTPS pero las fotos son HTTP -->
+<div class="alerta-mixta" id="alertaMixta">
+  <span class="am-icon">⚠️</span>
+  <span>
+    <strong>Las fotos no se muestran</strong> porque accedés a esta página por HTTPS
+    (GitHub Pages) pero las imágenes usan HTTP (red interna de Tate).
+    Solución: <a href="http://192.168.0.9:4013/GestorEcommerce.html" target="_blank">abrí la herramienta desde la red local →</a>
+    <code style="font-size:11px;background:#fff8e1;padding:1px 5px;border-radius:3px;border:1px solid #ffc107;">http://192.168.0.9:4013/GestorEcommerce.html</code>
+    &nbsp;· Las fotos igual tienen un ícono para abrirlas en pestaña nueva.
+  </span>
+</div>
+
 <header class="header">
   <img src="https://raw.githubusercontent.com/sebertorello/ScannerTate/main/public/img/LogoTate.png" alt="Tate" />
   <div class="header-text">
@@ -222,6 +314,10 @@ body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--t
   <div class="header-right">
     <span class="badge" id="badgeTotal">—</span>
     <span class="badge verde" id="badgeCarg">—</span>
+    <button class="btn-cache btn-tags-mgr" onclick="abrirModalGestionTags()">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+      Tags
+    </button>
     <button class="btn-cache" onclick="abrirModalCache()">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
       Actualizar caché
@@ -290,6 +386,12 @@ body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--t
   <span class="lbl">Marca</span>
   <select class="sel" id="selMarca" onchange="filtrar()"><option value="">Todas</option></select>
   <div class="sep"></div>
+  <span class="lbl">Tag</span>
+  <div id="gTag" style="display:flex;gap:4px;flex-wrap:wrap">
+    <!-- Se llena dinámicamente con renderTagsFiltro() -->
+    <button class="pill on" onclick="setFTag('')">Todos</button>
+  </div>
+  <div class="sep"></div>
   <span class="lbl">Ordenar</span>
   <select class="sel" id="selOrden" onchange="filtrar()">
     <option value="fecha-desc">Fecha (reciente primero)</option>
@@ -315,6 +417,35 @@ body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--t
   </div>
 </div>
 
+<!-- Panel flotante de asignación de tags a una fila -->
+<div class="tag-panel" id="tagPanel">
+  <h4>Tags</h4>
+  <div id="tagPanelItems"></div>
+  <div class="tag-panel-footer">
+    <button onclick="cerrarPanelTags()">Cerrar</button>
+  </div>
+</div>
+
+<!-- Modal gestión de tags (crear/editar/eliminar) -->
+<div class="modal-bg" id="modalTags" onclick="cerrarModalGestionTags(event)">
+  <div class="modal" onclick="event.stopPropagation()" style="max-width:440px">
+    <h3>🏷️ Gestionar tags</h3>
+    <p style="font-size:12px;color:var(--text-muted)">
+      Los tags se guardan en el Google Sheet y son compartidos con todos los usuarios.
+    </p>
+    <div id="tagsListContainer" style="margin:10px 0;max-height:280px;overflow-y:auto"></div>
+    <p style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-top:14px">Nuevo tag</p>
+    <div class="tag-form" id="tagNuevoForm">
+      <input type="color" id="tagNuevoColor" value="#CF1E29" />
+      <input type="text"  id="tagNuevoNombre" placeholder="Nombre del tag" maxlength="30" />
+      <button onclick="crearTag()">Agregar</button>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-sec" onclick="cerrarModalGestionTags()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
 <div class="lb" id="lb" onclick="lbCerrar(event)">
   <button class="lb-x" onclick="lbCerrar(null)">×</button>
   <img id="lbImg" src="" alt="" />
@@ -327,9 +458,21 @@ const WEBAPP   = 'https://script.google.com/a/macros/tate.com.ar/s/AKfycbzm2EhhI
 const APP_URL  = 'http://192.168.0.9:4013';
 const API_BASE = 'http://192.168.0.9:4200';
 
-let todos  = [];
-let fEst   = 'todos';
-let fTipo  = 'todos';
+let todos     = [];
+let tagsList  = [];   // tags disponibles: [{id, color, nombre}]
+let fEst      = 'todos';
+let fTipo     = 'todos';
+let fTag      = '';   // '' = todos, o id de tag para filtrar
+
+// Detectar contenido mixto: si la página corre en HTTPS pero las fotos van por HTTP,
+// los navegadores bloquean las imágenes. Mostrar alerta al usuario.
+(function detectarContenidoMixto() {
+  // Las fotos de Tate son siempre http://c.tate.com.ar:9090/...
+  // Si la página está en HTTPS (GitHub Pages), habrá conflicto.
+  if (location.protocol === 'https:') {
+    document.getElementById('alertaMixta').classList.add('visible');
+  }
+})();
 
 // Normaliza SKU a 13 dígitos (mismo que Apps Script)
 function normSku(v) {
@@ -580,7 +723,9 @@ function cargarDatos() {
     mostrarProgreso(true, '¡Listo!', 100);
     setTimeout(() => mostrarProgreso(false), 500);
     if (json.error) { setEstado('error', json.error); return; }
-    todos = json.productos || [];
+    todos    = json.productos || [];
+    tagsList = json.tags      || [];
+    renderTagsFiltro();
     actualizarBadges();
     actualizarMarcas();
     filtrar();
@@ -617,6 +762,7 @@ function filtrar() {
   if (fEst === 'carg') lista = lista.filter(p =>  p.cargado);
   if (fTipo !== 'todos') lista = lista.filter(p => p.tipo === fTipo);
   if (marc) lista = lista.filter(p => p.marca === marc);
+  if (fTag) lista = lista.filter(p => p.tags && p.tags.includes(fTag));
   if (busq) lista = lista.filter(p =>
     p.sku.includes(busq) ||
     (p.desc  || '').toLowerCase().includes(busq) ||
@@ -687,25 +833,46 @@ function crearFila(p) {
   // FOTO
   const foto = document.createElement('div');
   foto.className = 'c-foto';
-  foto.title = 'Ver foto ampliada';
+  const iconoNF = '<div class="nf"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg></div>';
   if (p.foto) {
-    const img = document.createElement('img');
-    img.src = p.foto;
-    img.alt = p.desc || '';
-    img.loading = 'lazy';
-    img.onerror = function() {
-      foto.innerHTML = '<div class="nf"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg></div>';
-    };
-    foto.appendChild(img);
-    foto.onclick = () => lbAbrir(p.foto);
+    // ¿Hay conflicto de contenido mixto? (página HTTPS, foto HTTP)
+    const mixedContent = location.protocol === 'https:' && p.foto.startsWith('http:');
+    if (mixedContent) {
+      // No intentamos cargar la imagen — mostrar ícono de link en su lugar
+      const a = document.createElement('a');
+      a.className = 'foto-link';
+      a.href = p.foto;
+      a.target = '_blank';
+      a.title = 'Abrir foto en nueva pestaña\n' + p.foto;
+      a.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg><span>Ver</span>';
+      foto.appendChild(a);
+    } else {
+      foto.title = 'Ver foto ampliada';
+      const img = document.createElement('img');
+      img.src = p.foto;
+      img.alt = p.desc || '';
+      img.loading = 'lazy';
+      img.onerror = function() { foto.innerHTML = iconoNF; };
+      foto.appendChild(img);
+      foto.onclick = () => lbAbrir(p.foto);
+    }
   } else {
-    foto.innerHTML = '<div class="nf"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg></div>';
+    foto.innerHTML = iconoNF;
   }
 
   // DESCRIPCIÓN
   const desc = document.createElement('div');
   desc.className = 'c-desc';
-  desc.innerHTML = `<div class="desc-txt" title="${esc(p.desc)}">${esc(p.desc) || '<span style="color:var(--border)">—</span>'}</div><div class="desc-sku">${esc(p.sku)}</div>`;
+  // Armar bolitas de tags
+  const tagsHtml = (p.tags || []).map(tid => {
+    const tag = tagsList.find(t => t.id === tid);
+    if (!tag) return '';
+    return `<span class="tag-dot" style="background:${esc(tag.color)}" title="${esc(tag.nombre)}" onclick="event.stopPropagation();setFTag('${esc(tid)}')"></span>`;
+  }).join('');
+  desc.innerHTML = `<div class="desc-txt" title="${esc(p.desc)}">${esc(p.desc) || '<span style="color:var(--border)">—</span>'}</div>`
+    + `<div class="desc-sku">${esc(p.sku)}`
+    + (tagsHtml ? `<span class="tags-row">${tagsHtml}</span>` : '')
+    + `</div>`;
 
   // MARCA
   const marca = document.createElement('div');
@@ -749,6 +916,10 @@ function crearFila(p) {
     <button class="btn" onclick="copiar('${p.sku}',this)">
       <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
       Copiar
+    </button>
+    <button class="btn btn-tag" onclick="abrirPanelTags(this,${p.fila},${JSON.stringify(p.tags||[])})" title="Asignar tags">
+      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+      Tag
     </button>`;
 
   // SWITCH
@@ -876,6 +1047,245 @@ function mostrarProgreso(visible, txt, pct) {
 
 function spin(si) {
   document.getElementById('btnReload').classList.toggle('girando', si);
+}
+
+// ── TAGS — FILTRO ────────────────────────────────────────────────
+function renderTagsFiltro() {
+  const g = document.getElementById('gTag');
+  // Botón "Todos" siempre primero
+  let html = `<button class="pill ${fTag===''?'on':''}" onclick="setFTag('')">Todos</button>`;
+  tagsList.forEach(t => {
+    const on = fTag === t.id ? 'on' : '';
+    html += `<button class="pill pill-tag ${on}" onclick="setFTag('${esc(t.id)}')">
+      <span class="pt-dot" style="background:${esc(t.color)}"></span>${esc(t.nombre)}
+    </button>`;
+  });
+  g.innerHTML = html;
+}
+
+function setFTag(tid) {
+  fTag = tid;
+  renderTagsFiltro();
+  filtrar();
+}
+
+// ── TAGS — PANEL FLOTANTE (asignar a una fila) ───────────────────
+let _panelFila = null;
+let _panelTagIds = [];
+
+function abrirPanelTags(btn, fila, tagsActuales) {
+  const panel = document.getElementById('tagPanel');
+  _panelFila   = fila;
+  _panelTagIds = [...(tagsActuales || [])];
+
+  if (tagsList.length === 0) {
+    document.getElementById('tagPanelItems').innerHTML =
+      '<p class="tag-panel-empty">No hay tags creados aún.<br>Creá uno desde el botón "Tags" arriba.</p>';
+  } else {
+    document.getElementById('tagPanelItems').innerHTML = tagsList.map(t => {
+      const activo = _panelTagIds.includes(t.id) ? 'activo' : '';
+      return `<div class="tag-panel-item ${activo}" id="tpi-${esc(t.id)}" onclick="toggleTagEnPanel('${esc(t.id)}')">
+        <span class="tp-dot" style="background:${esc(t.color)}"></span>
+        <span>${esc(t.nombre)}</span>
+        <span class="tp-check">✓</span>
+      </div>`;
+    }).join('');
+  }
+
+  // Posicionar el panel cerca del botón
+  const rect = btn.getBoundingClientRect();
+  panel.style.top  = (rect.bottom + window.scrollY + 6) + 'px';
+  panel.style.left = Math.min(rect.left + window.scrollX, window.innerWidth - 250) + 'px';
+  panel.classList.add('on');
+
+  // Cerrar al hacer click afuera
+  setTimeout(() => {
+    document.addEventListener('click', _cerrarPanelFuera, { once: false, capture: true });
+  }, 10);
+}
+
+function _cerrarPanelFuera(e) {
+  const panel = document.getElementById('tagPanel');
+  if (!panel.contains(e.target)) {
+    cerrarPanelTags();
+  }
+}
+
+function cerrarPanelTags() {
+  document.getElementById('tagPanel').classList.remove('on');
+  document.removeEventListener('click', _cerrarPanelFuera, true);
+  _panelFila = null;
+}
+
+function toggleTagEnPanel(tagId) {
+  const idx = _panelTagIds.indexOf(tagId);
+  if (idx >= 0) {
+    _panelTagIds.splice(idx, 1);
+  } else {
+    _panelTagIds.push(tagId);
+  }
+  // Actualizar visual del item
+  const item = document.getElementById('tpi-' + tagId);
+  if (item) item.classList.toggle('activo', _panelTagIds.includes(tagId));
+
+  // Guardar inmediatamente en el sheet (sin cerrar el panel)
+  if (_panelFila !== null) {
+    _guardarTagsEnSheet(_panelFila, _panelTagIds.join(','), () => {
+      // Actualizar en memoria
+      todos.forEach(p => {
+        if (p.fila === _panelFila) p.tags = [..._panelTagIds];
+      });
+      // Re-render de la fila en el DOM (solo actualizar bolitas)
+      document.querySelectorAll(`.fila[data-fila="${_panelFila}"]`).forEach(filaEl => {
+        const descSkuEl = filaEl.querySelector('.desc-sku');
+        if (descSkuEl) {
+          const skuText = descSkuEl.childNodes[0];
+          const existingRow = descSkuEl.querySelector('.tags-row');
+          if (existingRow) existingRow.remove();
+          const tagsHtml = _panelTagIds.map(tid => {
+            const tag = tagsList.find(t => t.id === tid);
+            if (!tag) return '';
+            return `<span class="tag-dot" style="background:${esc(tag.color)}" title="${esc(tag.nombre)}" onclick="event.stopPropagation();setFTag('${esc(tid)}')"></span>`;
+          }).join('');
+          if (tagsHtml) {
+            const span = document.createElement('span');
+            span.className = 'tags-row';
+            span.innerHTML = tagsHtml;
+            descSkuEl.appendChild(span);
+          }
+        }
+      });
+    });
+  }
+}
+
+function _guardarTagsEnSheet(fila, tagIds, onOk) {
+  const cbName = '__tagCb_' + Date.now();
+  const t = setTimeout(() => { toast('Timeout guardando tag', 'err'); delete window[cbName]; }, 15000);
+  window[cbName] = function(json) {
+    clearTimeout(t); delete window[cbName];
+    if (!json.ok) { toast('Error: ' + (json.error || 'desconocido'), 'err'); return; }
+    if (onOk) onOk();
+  };
+  const s = document.createElement('script');
+  s.src = WEBAPP + '?accion=asignarTag&fila=' + fila + '&tagIds=' + encodeURIComponent(tagIds) + '&callback=' + cbName;
+  s.onerror = () => { clearTimeout(t); toast('Error de conexión (tags)', 'err'); };
+  document.body.appendChild(s);
+}
+
+// ── TAGS — GESTIÓN (modal crear/editar/eliminar) ─────────────────
+function abrirModalGestionTags() {
+  renderListaGestionTags();
+  document.getElementById('modalTags').classList.add('on');
+}
+
+function cerrarModalGestionTags(e) {
+  if (e && e.target !== e.currentTarget) return;
+  document.getElementById('modalTags').classList.remove('on');
+  // Limpiar formulario de edición si estaba abierto
+  document.getElementById('tagNuevoForm').dataset.editId = '';
+  document.getElementById('tagNuevoNombre').value = '';
+  document.getElementById('tagNuevoColor').value = '#CF1E29';
+  document.querySelector('#tagNuevoForm button').textContent = 'Agregar';
+}
+
+function renderListaGestionTags() {
+  const c = document.getElementById('tagsListContainer');
+  if (tagsList.length === 0) {
+    c.innerHTML = '<p style="font-size:12px;color:var(--text-muted);padding:8px 0">No hay tags aún. ¡Creá el primero!</p>';
+    return;
+  }
+  c.innerHTML = tagsList.map(t => `
+    <div class="tags-list-item" id="tli-${esc(t.id)}">
+      <span class="tli-dot" style="background:${esc(t.color)}"></span>
+      <span class="tli-nombre">${esc(t.nombre)}</span>
+      <div class="tli-btns">
+        <button onclick="editarTag('${esc(t.id)}','${esc(t.color)}','${esc(t.nombre)}')">Editar</button>
+        <button onclick="eliminarTagConfirm('${esc(t.id)}','${esc(t.nombre)}')" style="color:var(--red)">Eliminar</button>
+      </div>
+    </div>`).join('');
+}
+
+function crearTag() {
+  const color  = document.getElementById('tagNuevoColor').value.trim();
+  const nombre = document.getElementById('tagNuevoNombre').value.trim();
+  const editId = document.getElementById('tagNuevoForm').dataset.editId || '';
+  if (!nombre) { toast('Escribí un nombre para el tag', 'err'); return; }
+
+  const cbName = '__ntag_' + Date.now();
+  const t = setTimeout(() => { toast('Timeout', 'err'); delete window[cbName]; }, 20000);
+  window[cbName] = function(json) {
+    clearTimeout(t); delete window[cbName];
+    if (!json.ok) { toast('Error: ' + (json.error||'desconocido'), 'err'); return; }
+    // Actualizar tagsList en memoria
+    if (editId) {
+      const idx = tagsList.findIndex(t => t.id === editId);
+      if (idx >= 0) tagsList[idx] = { id: editId, color, nombre };
+    } else {
+      tagsList.push({ id: json.id, color, nombre });
+    }
+    // Limpiar form
+    document.getElementById('tagNuevoNombre').value = '';
+    document.getElementById('tagNuevoColor').value = '#CF1E29';
+    document.getElementById('tagNuevoForm').dataset.editId = '';
+    document.querySelector('#tagNuevoForm button').textContent = 'Agregar';
+    const cancelBtn = document.getElementById('tagCancelBtn');
+    if (cancelBtn) cancelBtn.remove();
+    renderListaGestionTags();
+    renderTagsFiltro();
+    toast(editId ? 'Tag actualizado' : 'Tag creado', 'ok');
+  };
+  const params = `accion=guardarTag&id=${encodeURIComponent(editId)}&color=${encodeURIComponent(color)}&nombre=${encodeURIComponent(nombre)}&callback=${cbName}`;
+  const s = document.createElement('script');
+  s.src = WEBAPP + '?' + params;
+  s.onerror = () => { clearTimeout(t); toast('Error de conexión', 'err'); };
+  document.body.appendChild(s);
+}
+
+function editarTag(id, color, nombre) {
+  document.getElementById('tagNuevoColor').value  = color;
+  document.getElementById('tagNuevoNombre').value = nombre;
+  document.getElementById('tagNuevoForm').dataset.editId = id;
+  document.querySelector('#tagNuevoForm button').textContent = 'Guardar cambios';
+  // Agregar botón cancelar si no existe
+  if (!document.getElementById('tagCancelBtn')) {
+    const btn = document.createElement('button');
+    btn.id = 'tagCancelBtn';
+    btn.className = 'cancel';
+    btn.textContent = 'Cancelar';
+    btn.onclick = () => {
+      document.getElementById('tagNuevoNombre').value = '';
+      document.getElementById('tagNuevoColor').value = '#CF1E29';
+      document.getElementById('tagNuevoForm').dataset.editId = '';
+      document.querySelector('#tagNuevoForm button').textContent = 'Agregar';
+      btn.remove();
+    };
+    document.getElementById('tagNuevoForm').appendChild(btn);
+  }
+  document.getElementById('tagNuevoNombre').focus();
+}
+
+function eliminarTagConfirm(id, nombre) {
+  if (!confirm(`¿Eliminar el tag "${nombre}"?\nSe quitará de todos los productos que lo tengan asignado.`)) return;
+  const cbName = '__delTag_' + Date.now();
+  const t = setTimeout(() => { toast('Timeout', 'err'); delete window[cbName]; }, 20000);
+  window[cbName] = function(json) {
+    clearTimeout(t); delete window[cbName];
+    if (!json.ok) { toast('Error: ' + (json.error||'desconocido'), 'err'); return; }
+    // Quitar de tagsList
+    tagsList = tagsList.filter(t => t.id !== id);
+    // Quitar de todos los productos en memoria
+    todos.forEach(p => { if (p.tags) p.tags = p.tags.filter(tid => tid !== id); });
+    if (fTag === id) fTag = '';
+    renderListaGestionTags();
+    renderTagsFiltro();
+    filtrar();
+    toast('Tag eliminado', 'ok');
+  };
+  const s = document.createElement('script');
+  s.src = WEBAPP + '?accion=eliminarTag&id=' + encodeURIComponent(id) + '&callback=' + cbName;
+  s.onerror = () => { clearTimeout(t); toast('Error de conexión', 'err'); };
+  document.body.appendChild(s);
 }
 
 window.addEventListener('DOMContentLoaded', cargarDatos);
