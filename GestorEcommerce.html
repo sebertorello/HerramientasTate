@@ -409,7 +409,7 @@ async function iniciarActualizacionCache() {
   try {
     // ── Paso 1: obtener la lista de SKUs nuevos ──────────────────
     logCache('Consultando hoja Físico y caché existente…');
-    const skuRes = await jsonpGet(WEBAPP + '?accion=skus&callback=__skuCb');
+    const skuRes = await jsonpGet(WEBAPP + '?accion=skus&callback=__skuCb', '__skuCb');
 
     if (skuRes.error) {
       logCache('Error: ' + skuRes.error, 'err');
@@ -519,22 +519,23 @@ async function iniciarActualizacionCache() {
   }
 }
 
-// Envía items al sheet via POST a la webapp
+// Envía items al sheet via JSONP (GET) — POST no funciona por CORS en Apps Script
+// Parte los items en lotes de 5 para no superar el límite de longitud de URL
 async function guardarItemsEnSheet(items) {
-  const r = await fetch(WEBAPP, {
-    method:  'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body:    JSON.stringify({ accion: 'guardarCache', items }),
-  });
-  if (!r.ok) throw new Error('Error al guardar en el sheet: HTTP ' + r.status);
-  const j = await r.json();
-  if (!j.ok) throw new Error('Error de la webapp: ' + (j.error || 'desconocido'));
+  const LOTE_URL = 5;  // máximo de items por llamada JSONP
+  for (let i = 0; i < items.length; i += LOTE_URL) {
+    const lote = items.slice(i, i + LOTE_URL);
+    const datos = encodeURIComponent(JSON.stringify(lote));
+    const url   = WEBAPP + '?accion=guardarCacheGet&datos=' + datos + '&callback=__gc';
+    const res   = await jsonpGet(url, '__gc');
+    if (!res.ok) throw new Error('Error al guardar en el sheet: ' + (res.error || 'desconocido'));
+  }
 }
 
-// Helper: JSONP promise
-function jsonpGet(url) {
+// Helper JSONP genérico: inyecta un script tag y espera el callback
+function jsonpGet(url, cbPlaceholder) {
   return new Promise((resolve, reject) => {
-    const cbName = '__jcb_' + Date.now();
+    const cbName = '__jcb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
     const s = document.createElement('script');
     const t = setTimeout(() => {
       s.remove(); delete window[cbName];
@@ -544,9 +545,9 @@ function jsonpGet(url) {
       clearTimeout(t); s.remove(); delete window[cbName];
       resolve(data);
     };
-    // Reemplaza el placeholder del callback en la URL
-    s.src = url.replace('__skuCb', cbName);
-    s.onerror = () => { clearTimeout(t); s.remove(); delete window[cbName]; reject(new Error('Error de red')); };
+    // Reemplaza el placeholder del callback (por defecto '__skuCb') con el nombre real
+    s.src = url.replace(cbPlaceholder || '__skuCb', cbName);
+    s.onerror = () => { clearTimeout(t); s.remove(); delete window[cbName]; reject(new Error('Error de red en JSONP')); };
     document.body.appendChild(s);
   });
 }
