@@ -128,7 +128,7 @@ body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--t
 .c-ubi   { width: 56px;  min-width: 56px;  padding: 0 8px; overflow: hidden; }
 .c-fecha { width: 80px;  min-width: 80px;  padding: 0 8px; }
 .c-tipo  { width: 68px;  min-width: 68px;  padding: 0 6px; }
-.c-btns  { width: 260px; min-width: 260px; padding: 0 8px; display: flex; gap: 5px; align-items: center; flex-shrink: 0; }
+.c-btns  { width: 320px; min-width: 320px; padding: 0 8px; display: flex; gap: 5px; align-items: center; flex-shrink: 0; }
 .c-sw    { width: 80px;  min-width: 80px;  padding: 0 8px 0 4px; display: flex; align-items: center; gap: 5px; justify-content: flex-end; flex-shrink: 0; }
 
 /* Foto */
@@ -198,19 +198,6 @@ body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--t
 .toast.on { opacity: 1; transform: translateY(0); }
 .toast.ok  { background: #198754; }
 .toast.err { background: #dc3545; }
-
-/* ── ALERTA CONTENIDO MIXTO ── */
-.alerta-mixta {
-  display: none;
-  background: #fff3cd; border-bottom: 2px solid #ffc107;
-  padding: 10px 24px; font-size: 12px; color: #664d03;
-  align-items: center; gap: 12px; flex-wrap: wrap;
-}
-.alerta-mixta.visible { display: flex; }
-.alerta-mixta strong { font-weight: 700; }
-.alerta-mixta a { color: #0066cc; font-weight: 600; text-decoration: none; }
-.alerta-mixta a:hover { text-decoration: underline; }
-.alerta-mixta .am-icon { font-size: 18px; flex-shrink: 0; }
 
 /* Celda de foto con link (modo mixto) */
 .c-foto .foto-link {
@@ -293,17 +280,6 @@ body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--t
 </head>
 <body>
 
-<!-- Alerta contenido mixto: se muestra si la página está en HTTPS pero las fotos son HTTP -->
-<div class="alerta-mixta" id="alertaMixta">
-  <span class="am-icon">⚠️</span>
-  <span>
-    <strong>Las fotos no se muestran</strong> porque accedés a esta página por HTTPS
-    (GitHub Pages) pero las imágenes usan HTTP (red interna de Tate).
-    Solución: <a href="http://192.168.0.9:4013/GestorEcommerce.html" target="_blank">abrí la herramienta desde la red local →</a>
-    <code style="font-size:11px;background:#fff8e1;padding:1px 5px;border-radius:3px;border:1px solid #ffc107;">http://192.168.0.9:4013/GestorEcommerce.html</code>
-    &nbsp;· Las fotos igual tienen un ícono para abrirlas en pestaña nueva.
-  </span>
-</div>
 
 <header class="header">
   <img src="https://raw.githubusercontent.com/sebertorello/ScannerTate/main/public/img/LogoTate.png" alt="Tate" />
@@ -464,15 +440,6 @@ let fEst      = 'todos';
 let fTipo     = 'todos';
 let fTag      = '';   // '' = todos, o id de tag para filtrar
 
-// Detectar contenido mixto: si la página corre en HTTPS pero las fotos van por HTTP,
-// los navegadores bloquean las imágenes. Mostrar alerta al usuario.
-(function detectarContenidoMixto() {
-  // Las fotos de Tate son siempre http://c.tate.com.ar:9090/...
-  // Si la página está en HTTPS (GitHub Pages), habrá conflicto.
-  if (location.protocol === 'https:') {
-    document.getElementById('alertaMixta').classList.add('visible');
-  }
-})();
 
 // Normaliza SKU a 13 dígitos (mismo que Apps Script)
 function normSku(v) {
