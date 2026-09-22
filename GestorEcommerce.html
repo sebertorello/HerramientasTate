@@ -677,30 +677,47 @@ function getWebAppUrl() {
 }
 
 // ═══════════════════════════════════════════════════════
-// CARGA DE DATOS DESDE SHEET (via Apps Script Web App)
+// CARGA DE DATOS DESDE SHEET (via JSONP para evitar CORS)
 // ═══════════════════════════════════════════════════════
 
-async function cargarDatos() {
+function cargarDatos() {
   btnReloadGirar(true);
   mostrarEstado('cargando');
 
-  try {
-    const resp = await fetch(WEBAPP_URL + '?accion=datos', { cache: 'no-store' });
-    if (!resp.ok) throw new Error('HTTP ' + resp.status);
-    const json = await resp.json();
-    if (json.error) throw new Error(json.error);
+  // Limpiar script JSONP anterior si existe
+  const anterior = document.getElementById('jsonp-script');
+  if (anterior) anterior.remove();
 
-    todosLosProductos = json.productos || [];
-    actualizarBadges();
-    await enriquecerProductos();
-    aplicarFiltros();
-    mostrarEstado('ok');
-  } catch(e) {
-    console.error(e);
-    mostrarEstado('error', e.message);
-  } finally {
+  // Timeout por si tarda demasiado
+  const timeout = setTimeout(() => {
     btnReloadGirar(false);
-  }
+    mostrarEstado('error', 'Tiempo de espera agotado — revisá tu conexión o la Web App');
+  }, 30000);
+
+  // Callback global que llama Apps Script
+  window.__jsonpCallback = function(json) {
+    clearTimeout(timeout);
+    btnReloadGirar(false);
+    try {
+      if (json.error) throw new Error(json.error);
+      todosLosProductos = json.productos || [];
+      actualizarBadges();
+      enriquecerProductos().then(() => aplicarFiltros());
+      aplicarFiltros();
+    } catch(e) {
+      mostrarEstado('error', e.message);
+    }
+  };
+
+  const script = document.createElement('script');
+  script.id  = 'jsonp-script';
+  script.src = WEBAPP_URL + '?accion=datos&callback=__jsonpCallback';
+  script.onerror = () => {
+    clearTimeout(timeout);
+    btnReloadGirar(false);
+    mostrarEstado('error', 'No se pudo conectar con la Web App — verificá que esté publicada correctamente');
+  };
+  document.body.appendChild(script);
 }
 
 // ═══════════════════════════════════════════════════════
@@ -951,31 +968,33 @@ function crearCard(p) {
 // TOGGLE CARGADO — escribe al sheet via Web App
 // ═══════════════════════════════════════════════════════
 
-async function toggleCargado(checkbox, sku, fila, grupo) {
+function toggleCargado(checkbox, sku, fila, grupo) {
   const nuevo = checkbox.checked;
   checkbox.disabled = true;
 
-  const url = getWebAppUrl();
-  if (!url) {
-    mostrarToast('No hay URL configurada', 'err');
+  const cbName = '__checkCallback_' + fila + '_' + grupo;
+
+  const anterior = document.getElementById('jsonp-check-' + fila + '-' + grupo);
+  if (anterior) anterior.remove();
+
+  const timeout = setTimeout(() => {
+    mostrarToast('Tiempo de espera agotado', 'err');
     checkbox.checked = !nuevo;
     checkbox.disabled = false;
-    return;
-  }
+  }, 15000);
 
-  try {
-    const resp = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ fila, grupo, valor: nuevo }),
-    });
-    const json = await resp.json();
-    if (!json.ok) throw new Error(json.error || 'Error desconocido');
-
+  window[cbName] = function(json) {
+    clearTimeout(timeout);
+    checkbox.disabled = false;
+    delete window[cbName];
+    if (!json.ok) {
+      mostrarToast('Error al guardar: ' + (json.error || 'desconocido'), 'err');
+      checkbox.checked = !nuevo;
+      return;
+    }
     // Actualizar data local
     const prod = todosLosProductos.find(p => p.fila === fila && p.grupo === grupo);
     if (prod) prod.cargado = nuevo;
-
     // Actualizar card visualmente
     const card = checkbox.closest('.card');
     if (card) {
@@ -983,15 +1002,20 @@ async function toggleCargado(checkbox, sku, fila, grupo) {
       const lbl = card.querySelector('.switch-lbl');
       if (lbl) lbl.textContent = nuevo ? 'Cargado' : 'Cargar';
     }
-
     actualizarBadges();
     mostrarToast(nuevo ? '✓ Marcado como cargado' : 'Desmarcado', 'ok');
-  } catch(e) {
-    mostrarToast('Error al guardar: ' + e.message, 'err');
-    checkbox.checked = !nuevo;
-  } finally {
+  };
+
+  const script = document.createElement('script');
+  script.id  = 'jsonp-check-' + fila + '-' + grupo;
+  script.src = WEBAPP_URL + '?accion=check&fila=' + fila + '&grupo=' + grupo + '&valor=' + nuevo + '&callback=' + cbName;
+  script.onerror = () => {
+    clearTimeout(timeout);
     checkbox.disabled = false;
-  }
+    checkbox.checked = !nuevo;
+    mostrarToast('Error de conexión', 'err');
+  };
+  document.body.appendChild(script);
 }
 
 // ═══════════════════════════════════════════════════════
