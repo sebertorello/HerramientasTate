@@ -16,168 +16,170 @@ html { scroll-behavior: smooth; }
   --border: #dee2e6; --bg: #f8f9fa; --white: #ffffff;
   --green-bg: #d1e7dd; --green-text: #0a3622;
   --warn-bg: #fff3cd; --warn-text: #856404;
-  --blue-bg: #e7f3ff; --blue-text: #0c5460;
-  --amarillo-border: #f5c842;
-  --rojo-border: #f5a0a0;
+  --blue-bg: #e7f3ff;
+  --amarillo: #f5c842;
+  --rojo-claro: #f5a0a0;
   --switch-on: #CF1E29; --switch-off: #ced4da;
   --header-h: 56px;
-  --row-h: 52px;
 }
 
-body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text); line-height: 1.4; min-height: 100vh; }
+body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
 /* ── HEADER ── */
 .header {
   background: var(--white); border-bottom: 3px solid var(--red);
-  padding: 0 28px; height: var(--header-h);
-  display: flex; align-items: center; gap: 14px;
+  padding: 0 24px; height: var(--header-h);
+  display: flex; align-items: center; gap: 12px;
   position: sticky; top: 0; z-index: 200;
   box-shadow: 0 2px 8px rgba(0,0,0,0.07);
 }
-.header img { height: 32px; mix-blend-mode: multiply; }
-.header-text h1 { font-size: 15px; font-weight: 700; color: var(--text-dark); }
-.header-text p  { font-size: 10px; color: var(--text-muted); margin-top: 1px; }
-.header-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
-.badge-count { background: var(--red); color: #fff; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
-.badge-count.verde { background: #198754; }
-.btn-reload { background: none; border: 1px solid var(--border); border-radius: 6px; padding: 5px 11px; font-size: 11px; font-family: 'Poppins', sans-serif; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; gap: 5px; transition: all 0.15s; }
+.header img { height: 30px; mix-blend-mode: multiply; }
+.header-text h1 { font-size: 15px; font-weight: 700; color: var(--text-dark); line-height: 1.2; }
+.header-text p  { font-size: 10px; color: var(--text-muted); }
+.header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.badge { background: var(--red); color: #fff; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
+.badge.verde { background: #198754; }
+.btn-reload { background: none; border: 1px solid var(--border); border-radius: 6px; padding: 5px 10px; font-size: 11px; font-family: 'Poppins', sans-serif; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; gap: 5px; transition: all 0.15s; white-space: nowrap; }
 .btn-reload:hover { border-color: var(--red); color: var(--red); }
-.btn-reload.girando svg { animation: girar 0.8s linear infinite; }
-@keyframes girar { to { transform: rotate(360deg); } }
+.btn-reload.girando svg { animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
 
 /* ── TOOLBAR ── */
 .toolbar {
   background: var(--white); border-bottom: 1px solid var(--border);
-  padding: 8px 28px; position: sticky; top: var(--header-h); z-index: 190;
-  display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+  padding: 8px 24px; position: sticky; top: var(--header-h); z-index: 190;
+  display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center;
 }
-.toolbar-sep { width: 1px; height: 20px; background: var(--border); margin: 0 3px; }
-.lbl-small { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-muted); white-space: nowrap; }
-.pill-btn { font-family: 'Poppins', sans-serif; font-size: 11px; font-weight: 500; padding: 4px 10px; border-radius: 20px; border: 1px solid var(--border); background: var(--white); color: var(--text-muted); cursor: pointer; transition: all 0.15s; white-space: nowrap; }
-.pill-btn:hover { border-color: var(--red); color: var(--red); }
-.pill-btn.active { background: var(--red); color: #fff; border-color: var(--red); }
-.select-ctrl { font-family: 'Poppins', sans-serif; font-size: 11px; padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--white); color: var(--text-dark); cursor: pointer; outline: none; }
-.select-ctrl:focus { border-color: var(--red); }
-.search-wrap { display: flex; align-items: center; gap: 5px; border: 1px solid var(--border); border-radius: 6px; padding: 4px 9px; background: var(--white); transition: border-color 0.15s; }
-.search-wrap:focus-within { border-color: var(--red); }
-.search-wrap input { border: none; outline: none; font-family: 'Poppins', sans-serif; font-size: 11px; color: var(--text-dark); width: 180px; background: transparent; }
-.search-wrap svg { color: var(--text-muted); flex-shrink: 0; }
+.sep { width: 1px; height: 20px; background: var(--border); }
+.lbl { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); white-space: nowrap; }
+.pill { font-family: 'Poppins', sans-serif; font-size: 11px; font-weight: 500; padding: 4px 10px; border-radius: 20px; border: 1px solid var(--border); background: var(--white); color: var(--text-muted); cursor: pointer; transition: all 0.12s; white-space: nowrap; }
+.pill:hover { border-color: var(--red); color: var(--red); }
+.pill.on { background: var(--red); color: #fff; border-color: var(--red); }
+.sel { font-family: 'Poppins', sans-serif; font-size: 11px; padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--white); color: var(--text-dark); cursor: pointer; outline: none; max-width: 160px; }
+.sel:focus { border-color: var(--red); }
+.search { display: flex; align-items: center; gap: 5px; border: 1px solid var(--border); border-radius: 6px; padding: 4px 9px; background: var(--white); }
+.search:focus-within { border-color: var(--red); }
+.search input { border: none; outline: none; font-family: 'Poppins', sans-serif; font-size: 11px; color: var(--text-dark); width: 200px; background: transparent; }
 
-/* ── STATS BAR ── */
-.stats-bar { padding: 6px 28px; display: flex; gap: 14px; align-items: center; background: var(--bg); border-bottom: 1px solid var(--border); font-size: 11px; color: var(--text-muted); }
-.stats-bar b { color: var(--text-dark); font-weight: 600; }
-.dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-right: 3px; }
-.dot-hermano { background: #f5c842; }
-.dot-gemelo  { background: #f5a0a0; }
+/* ── STATS ── */
+.stats { padding: 5px 24px; display: flex; gap: 14px; align-items: center; background: var(--bg); border-bottom: 1px solid var(--border); font-size: 11px; color: var(--text-muted); flex-wrap: wrap; }
+.stats b { color: var(--text-dark); font-weight: 600; }
+.dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; margin-right: 3px; vertical-align: middle; }
+.dot-h { background: var(--amarillo); }
+.dot-g { background: var(--rojo-claro); }
 
-/* ── LISTA ── */
-.lista-container { padding: 12px 28px 60px; display: flex; flex-direction: column; gap: 0; }
+/* ── TABLA ── */
+.tabla { padding: 12px 24px 60px; }
 
-/* ── FILA ── */
+/* Fila */
 .fila {
-  display: grid;
-  grid-template-columns: 52px 1fr 110px 72px 56px 80px 90px 90px 80px 110px;
-  align-items: center;
-  gap: 0;
-  min-height: var(--row-h);
+  display: flex; align-items: center;
   background: var(--white);
   border: 1px solid var(--border);
   border-top: none;
+  min-height: 56px;
   transition: background 0.1s;
-  cursor: default;
 }
 .fila:first-child { border-top: 1px solid var(--border); border-radius: 8px 8px 0 0; }
 .fila:last-child  { border-radius: 0 0 8px 8px; }
 .fila:only-child  { border-top: 1px solid var(--border); border-radius: 8px; }
 .fila:hover { background: #fafafa; }
-.fila.hermano { border-left: 3px solid var(--amarillo-border); }
-.fila.gemelo  { border-left: 3px solid var(--rojo-border); }
-.fila.cargado { opacity: 0.45; }
-.fila.cargado:hover { opacity: 0.7; }
+.fila.hermano { border-left: 3px solid var(--amarillo); }
+.fila.gemelo  { border-left: 3px solid var(--rojo-claro); }
+.fila.cargado { opacity: 0.4; }
+.fila.cargado:hover { opacity: 0.75; }
 
-/* Celda genérica */
-.fc { padding: 0 10px; overflow: hidden; }
+/* Columnas con anchos fijos */
+.c-foto  { width: 56px; min-width: 56px; height: 56px; flex-shrink: 0; }
+.c-desc  { flex: 1 1 0; min-width: 0; padding: 0 14px; }
+.c-marca { width: 110px; min-width: 110px; padding: 0 8px; }
+.c-ap    { width: 90px;  min-width: 90px;  padding: 0 8px; }
+.c-ubi   { width: 60px;  min-width: 60px;  padding: 0 8px; }
+.c-fecha { width: 84px;  min-width: 84px;  padding: 0 8px; }
+.c-tipo  { width: 72px;  min-width: 72px;  padding: 0 6px; }
+.c-btns  { width: 220px; min-width: 220px; padding: 0 8px; display: flex; gap: 4px; align-items: center; }
+.c-sw    { width: 90px;  min-width: 90px;  padding: 0 10px; display: flex; align-items: center; gap: 6px; justify-content: flex-end; }
 
 /* Foto */
-.fc-foto {
-  width: 52px; height: 52px; flex-shrink: 0;
+.c-foto {
   display: flex; align-items: center; justify-content: center;
-  background: var(--bg); cursor: zoom-in; overflow: hidden; padding: 0;
+  background: var(--bg); cursor: zoom-in; overflow: hidden;
+  border-right: 1px solid var(--border);
 }
-.fc-foto img { width: 100%; height: 100%; object-fit: contain; padding: 4px; }
-.fc-foto .no-foto-mini { color: var(--border); display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
-.fc-foto .no-foto-mini svg { width: 22px; height: 22px; }
-.fc-foto .foto-skeleton { width: 100%; height: 100%; background: linear-gradient(90deg, var(--border) 25%, #eee 50%, var(--border) 75%); background-size: 200% 100%; animation: shimmer 1.2s infinite; }
+.c-foto img { width: 100%; height: 100%; object-fit: contain; padding: 4px; }
+.c-foto .sk { width: 100%; height: 100%; background: linear-gradient(90deg,#eee 25%,#f5f5f5 50%,#eee 75%); background-size: 200% 100%; animation: shimmer 1.2s infinite; }
+.c-foto .nf { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; color: var(--border); }
 @keyframes shimmer { to { background-position: -200% 0; } }
 
 /* Descripción */
-.fc-desc { padding: 0 12px; }
-.fc-desc .desc-txt { font-size: 12px; font-weight: 600; color: var(--text-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.fc-desc .desc-sku { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-muted); margin-top: 1px; }
-.fc-desc .desc-skeleton { height: 10px; background: var(--border); border-radius: 4px; margin-bottom: 4px; }
-.fc-desc .desc-skeleton.w60 { width: 60%; }
-.fc-desc .desc-skeleton.w40 { width: 40%; }
+.desc-txt { font-size: 12px; font-weight: 600; color: var(--text-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.desc-sku { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+.sk-line { height: 9px; background: #e8e8e8; border-radius: 4px; }
 
 /* Chips de datos */
-.fc-chip { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.fc-chip .chip-lbl { font-family: 'Poppins', sans-serif; font-size: 9px; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 1px; }
-.fc-chip.loading { color: var(--border); }
+.chip-lbl { font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; color: var(--text-muted); display: block; margin-bottom: 1px; }
+.chip-val { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
 
 /* Fecha */
-.fc-fecha { font-size: 10px; color: var(--text-muted); white-space: nowrap; }
+.c-fecha .chip-val { font-family: 'Poppins', sans-serif; font-size: 10px; }
 
-/* Botones */
-.fc-btns { display: flex; gap: 4px; align-items: center; padding: 0 8px; }
-.btn-mini {
+/* Tipo badge */
+.badge-tipo { font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 20px; text-transform: uppercase; white-space: nowrap; display: inline-block; }
+.bt-h { background: var(--amarillo); color: #5c4800; }
+.bt-g { background: var(--rojo-claro); color: #7a1f1f; }
+
+/* Botones acción */
+.btn {
   font-family: 'Poppins', sans-serif; font-size: 10px; font-weight: 500;
   padding: 4px 8px; border-radius: 5px; border: 1px solid var(--border);
   background: var(--white); color: var(--text-muted); cursor: pointer;
   text-decoration: none; display: inline-flex; align-items: center; gap: 4px;
   transition: all 0.12s; white-space: nowrap;
 }
-.btn-mini:hover { border-color: var(--red); color: var(--red); }
-.btn-mini.rojo { background: var(--red); color: #fff; border-color: var(--red); }
-.btn-mini.rojo:hover { background: var(--red-dark); }
-.btn-mini.copiado { background: var(--green-bg); color: var(--green-text); border-color: #a3cfbb; }
+.btn:hover { border-color: var(--red); color: var(--red); }
+.btn.rojo { background: var(--red); color: #fff; border-color: var(--red); }
+.btn.rojo:hover { background: var(--red-dark); border-color: var(--red-dark); }
+.btn.ok { background: var(--green-bg); color: var(--green-text); border-color: #a3cfbb; }
 
 /* Switch */
-.fc-switch { display: flex; align-items: center; justify-content: center; gap: 5px; padding: 0 10px; }
-.switch-lbl { font-size: 9px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; white-space: nowrap; }
+.sw-lbl { font-size: 9px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; white-space: nowrap; }
 .switch { position: relative; width: 34px; height: 20px; flex-shrink: 0; }
 .switch input { opacity: 0; width: 0; height: 0; }
-.switch-slider { position: absolute; inset: 0; background: var(--switch-off); border-radius: 20px; cursor: pointer; transition: background 0.2s; }
-.switch-slider::before { content: ''; position: absolute; width: 14px; height: 14px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: transform 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
-.switch input:checked + .switch-slider { background: var(--switch-on); }
-.switch input:checked + .switch-slider::before { transform: translateX(14px); }
-.switch input:disabled + .switch-slider { opacity: 0.5; cursor: wait; }
+.slider { position: absolute; inset: 0; background: var(--switch-off); border-radius: 20px; cursor: pointer; transition: background 0.2s; }
+.slider::before { content: ''; position: absolute; width: 14px; height: 14px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: transform 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+.switch input:checked + .slider { background: var(--switch-on); }
+.switch input:checked + .slider::before { transform: translateX(14px); }
+.switch input:disabled + .slider { opacity: 0.5; cursor: wait; }
 
-/* Badge tipo en fila */
-.badge-tipo-mini { font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 20px; text-transform: uppercase; white-space: nowrap; }
-.badge-hermano { background: var(--amarillo-border); color: #5c4800; }
-.badge-gemelo  { background: var(--rojo-border);     color: #7a1f1f; }
-
-/* ── ESTADO ── */
-.estado-pantalla { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 300px; gap: 14px; color: var(--text-muted); }
-.spinner { width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--red); border-radius: 50%; animation: girar 0.8s linear infinite; }
-.estado-pantalla h2 { font-size: 15px; font-weight: 600; color: var(--text-dark); }
-.estado-pantalla p  { font-size: 12px; }
+/* ── ESTADOS ── */
+.estado { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 300px; gap: 14px; color: var(--text-muted); padding: 40px; }
+.estado h2 { font-size: 15px; font-weight: 600; color: var(--text-dark); }
+.estado p  { font-size: 12px; text-align: center; max-width: 360px; }
+.spinner { width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--red); border-radius: 50%; animation: spin 0.8s linear infinite; }
 
 /* ── LIGHTBOX ── */
-.lb-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 1000; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
-.lb-overlay.visible { opacity: 1; pointer-events: all; }
-.lb-overlay img { max-width: min(90vw, 640px); max-height: 85vh; object-fit: contain; border-radius: 4px; box-shadow: 0 8px 40px rgba(0,0,0,0.5); }
-.lb-close { position: absolute; top: 20px; right: 24px; color: #fff; font-size: 28px; cursor: pointer; line-height: 1; opacity: 0.8; background: none; border: none; transition: opacity 0.15s; }
-.lb-close:hover { opacity: 1; }
+.lb { position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 1000; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+.lb.on { opacity: 1; pointer-events: all; }
+.lb img { max-width: min(88vw, 700px); max-height: 88vh; object-fit: contain; border-radius: 4px; box-shadow: 0 8px 40px rgba(0,0,0,0.5); }
+.lb-x { position: absolute; top: 18px; right: 22px; color: #fff; font-size: 30px; cursor: pointer; background: none; border: none; opacity: 0.8; line-height: 1; }
+.lb-x:hover { opacity: 1; }
 
 /* ── TOAST ── */
 .toast { position: fixed; bottom: 20px; right: 20px; background: var(--text-dark); color: #fff; font-size: 12px; padding: 9px 16px; border-radius: 7px; box-shadow: 0 4px 16px rgba(0,0,0,0.2); z-index: 500; opacity: 0; transform: translateY(10px); transition: all 0.2s; pointer-events: none; }
-.toast.visible { opacity: 1; transform: translateY(0); }
+.toast.on { opacity: 1; transform: translateY(0); }
 .toast.ok  { background: #198754; }
 .toast.err { background: #dc3545; }
 
 /* ── FOOTER ── */
 .footer { background: var(--text-dark); color: #adb5bd; text-align: center; padding: 18px; font-size: 11px; margin-top: 40px; }
 .footer b { color: #fff; }
+
+/* ── PROGRSO DE CARGA ── */
+.progreso-wrap { padding: 8px 24px; background: var(--bg); border-bottom: 1px solid var(--border); display: none; align-items: center; gap: 10px; }
+.progreso-wrap.visible { display: flex; }
+.progreso-bar-bg { flex: 1; height: 4px; background: var(--border); border-radius: 4px; overflow: hidden; }
+.progreso-bar { height: 100%; background: var(--red); border-radius: 4px; transition: width 0.3s; width: 0%; }
+.progreso-txt { font-size: 10px; color: var(--text-muted); white-space: nowrap; }
 </style>
 </head>
 <body>
@@ -186,165 +188,187 @@ body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--t
   <img src="https://raw.githubusercontent.com/sebertorello/ScannerTate/main/public/img/LogoTate.png" alt="Tate" />
   <div class="header-text">
     <h1>Gestor Ecommerce</h1>
-    <p>Hoja <span id="hojaNombre">octubre</span> — carga de atributos</p>
+    <p>Hoja <span id="hojaNombre">Octubre</span> — carga de atributos</p>
   </div>
   <div class="header-right">
-    <span class="badge-count" id="badgeTotal">—</span>
-    <span class="badge-count verde" id="badgeCargados">—</span>
+    <span class="badge" id="badgeTotal">—</span>
+    <span class="badge verde" id="badgeCarg">—</span>
     <button class="btn-reload" id="btnReload" onclick="cargarDatos()">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
       Actualizar
     </button>
   </div>
 </header>
 
 <div class="toolbar">
-  <div class="search-wrap">
+  <div class="search">
     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-    <input type="text" id="buscador" placeholder="SKU, marca, AP, descripción…" oninput="aplicarFiltros()" />
+    <input type="text" id="busq" placeholder="SKU, marca, AP, descripción…" oninput="filtrar()" />
   </div>
-  <div class="toolbar-sep"></div>
-  <span class="lbl-small">Estado</span>
-  <div id="grpEstado" style="display:flex;gap:4px">
-    <button class="pill-btn active" onclick="setFiltro('estado','todos',this)">Todos</button>
-    <button class="pill-btn" onclick="setFiltro('estado','pendientes',this)">Pendientes</button>
-    <button class="pill-btn" onclick="setFiltro('estado','cargados',this)">Cargados</button>
+  <div class="sep"></div>
+  <span class="lbl">Estado</span>
+  <div id="gEst" style="display:flex;gap:4px">
+    <button class="pill on" onclick="setF('est','todos',this)">Todos</button>
+    <button class="pill"    onclick="setF('est','pend',this)">Pendientes</button>
+    <button class="pill"    onclick="setF('est','carg',this)">Cargados</button>
   </div>
-  <div class="toolbar-sep"></div>
-  <span class="lbl-small">Tipo</span>
-  <div id="grpTipo" style="display:flex;gap:4px">
-    <button class="pill-btn active" onclick="setFiltro('tipo','todos',this)">Todos</button>
-    <button class="pill-btn" onclick="setFiltro('tipo','normal',this)">Normales</button>
-    <button class="pill-btn" onclick="setFiltro('tipo','hermano',this)">Hermanos</button>
-    <button class="pill-btn" onclick="setFiltro('tipo','gemelo',this)">Gemelos</button>
+  <div class="sep"></div>
+  <span class="lbl">Tipo</span>
+  <div id="gTipo" style="display:flex;gap:4px">
+    <button class="pill on" onclick="setF('tipo','todos',this)">Todos</button>
+    <button class="pill"    onclick="setF('tipo','normal',this)">Normales</button>
+    <button class="pill"    onclick="setF('tipo','hermano',this)">Hermanos</button>
+    <button class="pill"    onclick="setF('tipo','gemelo',this)">Gemelos</button>
   </div>
-  <div class="toolbar-sep"></div>
-  <span class="lbl-small">Marca</span>
-  <select class="select-ctrl" id="filtroMarca" onchange="aplicarFiltros()"><option value="">Todas</option></select>
-  <div class="toolbar-sep"></div>
-  <span class="lbl-small">Ordenar</span>
-  <select class="select-ctrl" id="orden" onchange="aplicarFiltros()">
+  <div class="sep"></div>
+  <span class="lbl">Marca</span>
+  <select class="sel" id="selMarca" onchange="filtrar()"><option value="">Todas</option></select>
+  <div class="sep"></div>
+  <span class="lbl">Ordenar</span>
+  <select class="sel" id="selOrden" onchange="filtrar()">
     <option value="fecha-desc">Fecha (reciente primero)</option>
     <option value="fecha-asc">Fecha (antigua primero)</option>
     <option value="marca-asc">Marca A–Z</option>
-    <option value="estado-pend">Pendientes primero</option>
-    <option value="estado-carg">Cargados primero</option>
+    <option value="pend-1">Pendientes primero</option>
+    <option value="carg-1">Cargados primero</option>
   </select>
 </div>
 
-<div class="stats-bar" id="statsBar">Cargando…</div>
+<div class="progreso-wrap" id="progresoWrap">
+  <div class="progreso-bar-bg"><div class="progreso-bar" id="progresoBarra"></div></div>
+  <span class="progreso-txt" id="progresoTxt">Cargando…</span>
+</div>
 
-<div id="mainContent">
-  <div class="estado-pantalla">
+<div class="stats" id="stats">Cargando…</div>
+
+<div id="main">
+  <div class="estado">
     <div class="spinner"></div>
     <h2>Conectando con el sheet…</h2>
-    <p>Esto puede tardar unos segundos la primera vez</p>
+    <p>Esto puede tardar 20–40 segundos la primera vez, el servidor está consultando los datos de cada producto.</p>
   </div>
 </div>
 
-<div class="lb-overlay" id="lightbox" onclick="lbCerrar(event)">
-  <button class="lb-close" onclick="lbCerrar(null)">×</button>
+<div class="lb" id="lb" onclick="lbCerrar(event)">
+  <button class="lb-x" onclick="lbCerrar(null)">×</button>
   <img id="lbImg" src="" alt="" />
 </div>
 <div class="toast" id="toast"></div>
-
 <footer class="footer"><b>Gestor Ecommerce</b> — Tate / Vertical Producciones</footer>
 
 <script>
-const WEBAPP_URL   = 'https://script.google.com/a/macros/tate.com.ar/s/AKfycbwQ5dWCPQPDUINwpqcjn60W86dbX3N08iLsauqU8u8MR2y86mo4ECBl3G5P6r0tRhTZ/exec';
-const API_BASE_URL = 'http://192.168.0.9:4200';
-const APP_BASE_URL = 'http://192.168.0.9:4013';
+const WEBAPP   = 'https://script.google.com/a/macros/tate.com.ar/s/AKfycbwQ5dWCPQPDUINwpqcjn60W86dbX3N08iLsauqU8u8MR2y86mo4ECBl3G5P6r0tRhTZ/exec';
+const APP_URL  = 'http://192.168.0.9:4013';
 
-let todosLosProductos = [];
-let cacheDetalles     = {}; // sku → { desc, marca, ap, ubi, foto }
-let filtroEstado = 'todos';
-let filtroTipo   = 'todos';
+let todos  = [];
+let fEst   = 'todos';
+let fTipo  = 'todos';
 
-// IntersectionObserver para lazy-load de detalles
-let observer;
-
-// ── CARGA INICIAL ────────────────────────────────────────
+// ── CARGA ───────────────────────────────────────────────────────
 function cargarDatos() {
-  btnReloadGirar(true);
-  mostrarEstado('cargando');
-  const ant = document.getElementById('_jsonp');
+  spin(true);
+  setEstado('cargando');
+  mostrarProgreso(true, 'Consultando el sheet y la API Tate…', 0);
+
+  const ant = document.getElementById('_js');
   if (ant) ant.remove();
 
   const t = setTimeout(() => {
-    btnReloadGirar(false);
-    mostrarEstado('error', 'Tiempo de espera agotado');
-  }, 30000);
+    spin(false);
+    mostrarProgreso(false);
+    setEstado('error', 'Tiempo de espera agotado (60s). El servidor puede estar ocupado — intentá de nuevo.');
+  }, 60000);
 
   window.__cb = function(json) {
     clearTimeout(t);
-    btnReloadGirar(false);
-    if (json.error) { mostrarEstado('error', json.error); return; }
-    todosLosProductos = json.productos || [];
+    spin(false);
+    mostrarProgreso(false);
+    if (json.error) { setEstado('error', json.error); return; }
+    todos = json.productos || [];
     actualizarBadges();
-    aplicarFiltros();
+    actualizarMarcas();
+    filtrar();
+  };
+
+  // Simulamos progreso mientras espera (el Apps Script tarda)
+  let pct = 0;
+  const intervalo = setInterval(() => {
+    pct = Math.min(pct + 2, 92);
+    mostrarProgreso(true, 'El servidor está procesando ' + todos.length + ' productos…', pct);
+  }, 800);
+  window.__cbCleanup = () => clearInterval(intervalo);
+
+  const orig = window.__cb;
+  window.__cb = function(json) {
+    clearInterval(intervalo);
+    mostrarProgreso(true, '¡Listo!', 100);
+    setTimeout(() => mostrarProgreso(false), 600);
+    orig(json);
   };
 
   const s = document.createElement('script');
-  s.id  = '_jsonp';
-  s.src = WEBAPP_URL + '?accion=datos&callback=__cb';
-  s.onerror = () => { clearTimeout(t); btnReloadGirar(false); mostrarEstado('error', 'No se pudo conectar'); };
+  s.id  = '_js';
+  s.src = WEBAPP + '?accion=datos&callback=__cb';
+  s.onerror = () => {
+    clearTimeout(t); clearInterval(intervalo);
+    spin(false); mostrarProgreso(false);
+    setEstado('error', 'No se pudo conectar con la Web App.');
+  };
   document.body.appendChild(s);
 }
 
-// ── FILTROS ──────────────────────────────────────────────
-function setFiltro(tipo, val, btn) {
-  if (tipo === 'estado') filtroEstado = val;
-  else filtroTipo = val;
-  btn.closest('[id^="grp"]').querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  aplicarFiltros();
+// ── FILTROS ──────────────────────────────────────────────────────
+function setF(tipo, val, btn) {
+  if (tipo === 'est')  fEst  = val;
+  else                 fTipo = val;
+  btn.closest('[id^="g"]').querySelectorAll('.pill').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  filtrar();
 }
 
-function aplicarFiltros() {
-  const busq = document.getElementById('buscador').value.trim().toLowerCase();
-  const marc = document.getElementById('filtroMarca').value;
-  const ord  = document.getElementById('orden').value;
+function filtrar() {
+  const busq = document.getElementById('busq').value.trim().toLowerCase();
+  const marc = document.getElementById('selMarca').value;
+  const ord  = document.getElementById('selOrden').value;
 
-  let lista = todosLosProductos.map(p => ({ ...p, _d: cacheDetalles[p.sku] || null }));
+  let lista = [...todos];
 
-  if (filtroEstado === 'pendientes') lista = lista.filter(p => !p.cargado);
-  if (filtroEstado === 'cargados')   lista = lista.filter(p => p.cargado);
-  if (filtroTipo !== 'todos')        lista = lista.filter(p => p.tipo === filtroTipo);
-  if (marc) lista = lista.filter(p => (p._d?.marca || '') === marc);
-  if (busq) lista = lista.filter(p => {
-    const d = p._d;
-    return p.sku.includes(busq)
-      || d?.desc?.toLowerCase().includes(busq)
-      || d?.marca?.toLowerCase().includes(busq)
-      || d?.ap?.toLowerCase().includes(busq);
-  });
+  if (fEst === 'pend') lista = lista.filter(p => !p.cargado);
+  if (fEst === 'carg') lista = lista.filter(p =>  p.cargado);
+  if (fTipo !== 'todos') lista = lista.filter(p => p.tipo === fTipo);
+  if (marc) lista = lista.filter(p => p.marca === marc);
+  if (busq) lista = lista.filter(p =>
+    p.sku.includes(busq) ||
+    (p.desc  || '').toLowerCase().includes(busq) ||
+    (p.marca || '').toLowerCase().includes(busq) ||
+    (p.ap    || '').toLowerCase().includes(busq)
+  );
 
-  lista.sort((a,b) => {
+  lista.sort((a, b) => {
     switch(ord) {
-      case 'fecha-desc':  return cmpFecha(b.fecha, a.fecha);
-      case 'fecha-asc':   return cmpFecha(a.fecha, b.fecha);
-      case 'marca-asc':   return (a._d?.marca||'').localeCompare(b._d?.marca||'');
-      case 'estado-pend': return (a.cargado?1:0)-(b.cargado?1:0);
-      case 'estado-carg': return (b.cargado?1:0)-(a.cargado?1:0);
+      case 'fecha-desc': return cmpF(b.fecha, a.fecha);
+      case 'fecha-asc':  return cmpF(a.fecha, b.fecha);
+      case 'marca-asc':  return (a.marca||'').localeCompare(b.marca||'');
+      case 'pend-1':     return (a.cargado?1:0)-(b.cargado?1:0);
+      case 'carg-1':     return (b.cargado?1:0)-(a.cargado?1:0);
       default: return 0;
     }
   });
 
-  actualizarMarcas();
   renderLista(lista);
   actualizarStats(lista);
 }
 
-function cmpFecha(a, b) {
+function cmpF(a, b) {
   if (!a) return 1; if (!b) return -1;
   const p = s => { const [d,m,y] = s.split('/').map(Number); return new Date(y,m-1,d); };
   return p(a) - p(b);
 }
 
 function actualizarMarcas() {
-  const sel = document.getElementById('filtroMarca');
+  const sel = document.getElementById('selMarca');
   const cur = sel.value;
-  const marcas = [...new Set(todosLosProductos.map(p => cacheDetalles[p.sku]?.marca).filter(m => m && m !== '—'))].sort();
+  const marcas = [...new Set(todos.map(p => p.marca).filter(m => m && m !== '—'))].sort();
   sel.innerHTML = '<option value="">Todas las marcas</option>';
   marcas.forEach(m => {
     const o = document.createElement('option');
@@ -354,277 +378,203 @@ function actualizarMarcas() {
   });
 }
 
-// ── RENDER LISTA ─────────────────────────────────────────
+// ── RENDER ───────────────────────────────────────────────────────
 function renderLista(lista) {
-  const cont = document.getElementById('mainContent');
+  const main = document.getElementById('main');
+
   if (lista.length === 0) {
-    cont.innerHTML = `<div class="estado-pantalla"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--border)" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><h2>Sin resultados</h2><p>Probá cambiando los filtros</p></div>`;
+    main.innerHTML = `<div class="estado"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--border)" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><h2>Sin resultados</h2><p>Probá cambiando los filtros</p></div>`;
     return;
   }
 
-  // Desconectar observer anterior
-  if (observer) observer.disconnect();
-
-  cont.innerHTML = '<div class="lista-container" id="lista"></div>';
-  const ul = document.getElementById('lista');
-
-  // Observer: cuando una fila entra en viewport → cargar detalles
-  observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (!entry.isIntersecting) return;
-      const fila = entry.target;
-      const sku  = fila.dataset.sku;
-      if (sku && !cacheDetalles[sku]) {
-        cargarDetalle(sku).then(() => actualizarFila(fila, sku));
-      } else if (sku && cacheDetalles[sku] && fila.dataset.enriquecida !== '1') {
-        actualizarFila(fila, sku);
-      }
-      observer.unobserve(fila);
-    });
-  }, { rootMargin: '200px' }); // pre-carga 200px antes de entrar
-
-  lista.forEach(p => {
-    const fila = crearFilaEsqueleto(p);
-    ul.appendChild(fila);
-    observer.observe(fila);
-  });
+  main.innerHTML = '<div class="tabla" id="tabla"></div>';
+  const tabla = document.getElementById('tabla');
+  const frag  = document.createDocumentFragment();
+  lista.forEach(p => frag.appendChild(crearFila(p)));
+  tabla.appendChild(frag);
 }
 
-// Fila esqueleto — se muestra instantáneo, sin datos de API
-function crearFilaEsqueleto(p) {
+function crearFila(p) {
   const fila = document.createElement('div');
   fila.className = 'fila' + (p.tipo !== 'normal' ? ' ' + p.tipo : '') + (p.cargado ? ' cargado' : '');
   fila.dataset.sku   = p.sku;
   fila.dataset.fila  = p.fila;
   fila.dataset.grupo = p.grupo;
 
-  // Foto skeleton
+  const urlC = APP_URL + '/#/consulta/tate/' + p.sku;
+  const urlA = APP_URL + '/#/listaABM/ecommerce/atributos/' + p.sku;
+
+  // FOTO
   const foto = document.createElement('div');
-  foto.className = 'fc-foto';
-  foto.innerHTML = '<div class="foto-skeleton"></div>';
-  foto.onclick = () => { const u = cacheDetalles[p.sku]?.foto; if (u) lbAbrir(u); };
-
-  // Descripción skeleton
-  const desc = document.createElement('div');
-  desc.className = 'fc fc-desc';
-  desc.innerHTML = `
-    <div class="desc-skeleton w60"></div>
-    <div class="desc-skeleton w40" style="margin-top:4px"></div>`;
-
-  // Datos (marca, AP, UBI) — skeleton
-  const marca = document.createElement('div');
-  marca.className = 'fc fc-chip loading';
-  marca.innerHTML = '<span class="chip-lbl">Marca</span>…';
-
-  const ap = document.createElement('div');
-  ap.className = 'fc fc-chip loading';
-  ap.innerHTML = '<span class="chip-lbl">AP</span>…';
-
-  const ubi = document.createElement('div');
-  ubi.className = 'fc fc-chip loading';
-  ubi.innerHTML = '<span class="chip-lbl">UBI</span>…';
-
-  // Fecha — disponible desde el sheet
-  const fecha = document.createElement('div');
-  fecha.className = 'fc fc-fecha';
-  fecha.textContent = p.fecha || '—';
-
-  // Tipo badge
-  const tipo = document.createElement('div');
-  tipo.className = 'fc';
-  tipo.style.padding = '0 6px';
-  if (p.tipo !== 'normal') {
-    tipo.innerHTML = `<span class="badge-tipo-mini badge-${p.tipo}">${p.tipo}</span>`;
+  foto.className = 'c-foto';
+  foto.title = 'Ver foto ampliada';
+  if (p.foto) {
+    const img = document.createElement('img');
+    img.src = p.foto;
+    img.alt = p.desc || '';
+    img.loading = 'lazy';
+    img.onerror = function() {
+      foto.innerHTML = '<div class="nf"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg></div>';
+    };
+    foto.appendChild(img);
+    foto.onclick = () => lbAbrir(p.foto);
+  } else {
+    foto.innerHTML = '<div class="nf"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg></div>';
   }
 
-  // Botones
+  // DESCRIPCIÓN
+  const desc = document.createElement('div');
+  desc.className = 'c-desc';
+  desc.innerHTML = `<div class="desc-txt" title="${esc(p.desc)}">${esc(p.desc) || '<span style="color:var(--border)">—</span>'}</div><div class="desc-sku">${esc(p.sku)}</div>`;
+
+  // MARCA
+  const marca = document.createElement('div');
+  marca.className = 'c-marca';
+  marca.innerHTML = `<span class="chip-lbl">Marca</span><span class="chip-val" title="${esc(p.marca)}">${esc(p.marca)||'—'}</span>`;
+
+  // AP
+  const ap = document.createElement('div');
+  ap.className = 'c-ap';
+  ap.innerHTML = `<span class="chip-lbl">AP</span><span class="chip-val">${esc(p.ap)||'—'}</span>`;
+
+  // UBI
+  const ubi = document.createElement('div');
+  ubi.className = 'c-ubi';
+  ubi.innerHTML = `<span class="chip-lbl">UBI</span><span class="chip-val">${esc(p.ubi)||'—'}</span>`;
+
+  // FECHA
+  const fecha = document.createElement('div');
+  fecha.className = 'c-fecha';
+  fecha.innerHTML = `<span class="chip-lbl">Fecha</span><span class="chip-val">${p.fecha||'—'}</span>`;
+
+  // TIPO
+  const tipo = document.createElement('div');
+  tipo.className = 'c-tipo';
+  if (p.tipo !== 'normal') {
+    tipo.innerHTML = `<span class="badge-tipo bt-${p.tipo[0]}">${p.tipo}</span>`;
+  }
+
+  // BOTONES
   const btns = document.createElement('div');
-  btns.className = 'fc-btns';
-  const urlC = `${APP_BASE_URL}/#/consulta/tate/${p.sku}`;
-  const urlA = `${APP_BASE_URL}/#/listaABM/ecommerce/atributos/${p.sku}`;
+  btns.className = 'c-btns';
   btns.innerHTML = `
-    <a class="btn-mini rojo" href="${urlC}" target="_blank">
+    <a class="btn rojo" href="${urlC}" target="_blank">
       <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
       Consultar
     </a>
-    <a class="btn-mini" href="${urlA}" target="_blank">
+    <a class="btn" href="${urlA}" target="_blank">
       <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg>
       Atributos
     </a>
-    <button class="btn-mini" onclick="copiarSku('${p.sku}',this)">
+    <button class="btn" onclick="copiar('${p.sku}',this)">
       <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
       Copiar
     </button>`;
 
-  // Switch
+  // SWITCH
   const sw = document.createElement('div');
-  sw.className = 'fc-switch';
+  sw.className = 'c-sw';
   sw.innerHTML = `
-    <span class="switch-lbl">${p.cargado ? 'Cargado' : 'Cargar'}</span>
+    <span class="sw-lbl">${p.cargado ? 'Listo' : 'Cargar'}</span>
     <label class="switch">
       <input type="checkbox" ${p.cargado ? 'checked' : ''}
-        onchange="toggleCargado(this,'${p.sku}',${p.fila},${p.grupo})" />
-      <span class="switch-slider"></span>
+        onchange="toggleCheck(this,'${p.sku}',${p.fila},${p.grupo})" />
+      <span class="slider"></span>
     </label>`;
 
-  fila.appendChild(foto);
-  fila.appendChild(desc);
-  fila.appendChild(marca);
-  fila.appendChild(ap);
-  fila.appendChild(ubi);
-  fila.appendChild(fecha);
-  fila.appendChild(tipo);
-  fila.appendChild(btns);
-  fila.appendChild(sw);
-
+  fila.append(foto, desc, marca, ap, ubi, fecha, tipo, btns, sw);
   return fila;
 }
 
-// Actualizar fila con datos reales de la API
-function actualizarFila(fila, sku) {
-  const d = cacheDetalles[sku];
-  if (!d) return;
-  fila.dataset.enriquecida = '1';
-
-  // Foto
-  const fotoEl = fila.querySelector('.fc-foto');
-  if (fotoEl) {
-    if (d.foto) {
-      // Las fotos son http — las servimos via proxy de imagen para evitar mixed content
-      // Usamos el propio servidor de imágenes (accesible desde la red interna)
-      const img = document.createElement('img');
-      img.alt = d.desc || '';
-      img.loading = 'lazy';
-      img.src = d.foto;
-      img.onerror = function() {
-        fotoEl.innerHTML = '<div class="no-foto-mini"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg></div>';
-      };
-      fotoEl.innerHTML = '';
-      fotoEl.appendChild(img);
-    } else {
-      fotoEl.innerHTML = '<div class="no-foto-mini"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg></div>';
-    }
-  }
-
-  // Descripción
-  const descEl = fila.querySelector('.fc-desc');
-  if (descEl) {
-    descEl.innerHTML = `<div class="desc-txt" title="${esc(d.desc)}">${esc(d.desc)}</div><div class="desc-sku">${esc(sku)}</div>`;
-  }
-
-  // Chips
-  const chips = fila.querySelectorAll('.fc-chip');
-  if (chips[0]) { chips[0].className = 'fc fc-chip'; chips[0].innerHTML = `<span class="chip-lbl">Marca</span>${esc(d.marca)}`; }
-  if (chips[1]) { chips[1].className = 'fc fc-chip'; chips[1].innerHTML = `<span class="chip-lbl">AP</span>${esc(d.ap)}`; }
-  if (chips[2]) { chips[2].className = 'fc fc-chip'; chips[2].innerHTML = `<span class="chip-lbl">UBI</span>${esc(d.ubi)}`; }
-}
-
-// ── CARGA DE DETALLE INDIVIDUAL ──────────────────────────
-async function cargarDetalle(sku) {
-  if (cacheDetalles[sku] !== undefined) return;
-  cacheDetalles[sku] = null; // marca como "en proceso"
-  try {
-    const r = await fetch(`${API_BASE_URL}/api/Consulta/limpio/${encodeURIComponent(sku)}/0001-`, { headers: { Accept: 'application/json' } });
-    if (!r.ok) return;
-    const j = await r.json();
-    const b1 = j.find(b => b.ds1);
-    const b4 = j.find(b => b.ds4);
-    const d  = b1?.ds1?.[0];
-    cacheDetalles[sku] = {
-      desc:  d?.Descripcion?.trim() || '—',
-      marca: d?.Marca ? d.Marca.replace(/\s*\[\d+\]\s*$/, '').trim() : '—',
-      ap:    d?.ArtProv?.trim() || '—',
-      ubi:   d?.Ubicacion?.trim() || '—',
-      foto:  b4?.ds4?.[0]?.Imagen || null,
-    };
-    // Actualizar select de marcas en tiempo real
-    actualizarMarcas();
-  } catch { /* cacheDetalles[sku] queda null */ }
-}
-
-// ── TOGGLE CHECK ─────────────────────────────────────────
-function toggleCargado(checkbox, sku, fila, grupo) {
-  const nuevo = checkbox.checked;
-  checkbox.disabled = true;
+// ── CHECK ────────────────────────────────────────────────────────
+function toggleCheck(cb, sku, fila, grupo) {
+  const nuevo = cb.checked;
+  cb.disabled = true;
 
   const cbName = '__ck_' + fila + '_' + grupo;
   const ant = document.getElementById('_jck_' + fila + '_' + grupo);
   if (ant) ant.remove();
 
   const t = setTimeout(() => {
-    mostrarToast('Tiempo de espera agotado', 'err');
-    checkbox.checked = !nuevo; checkbox.disabled = false;
+    toast('Tiempo de espera agotado', 'err');
+    cb.checked = !nuevo; cb.disabled = false;
   }, 15000);
 
   window[cbName] = function(json) {
-    clearTimeout(t); checkbox.disabled = false; delete window[cbName];
+    clearTimeout(t); cb.disabled = false; delete window[cbName];
     if (!json.ok) {
-      mostrarToast('Error: ' + (json.error || 'desconocido'), 'err');
-      checkbox.checked = !nuevo; return;
+      toast('Error: ' + (json.error || 'desconocido'), 'err');
+      cb.checked = !nuevo; return;
     }
-    const prod = todosLosProductos.find(p => p.fila === fila && p.grupo === grupo);
+    const prod = todos.find(p => p.fila === fila && p.grupo === grupo);
     if (prod) prod.cargado = nuevo;
-    const card = checkbox.closest('.fila');
-    if (card) {
-      card.classList.toggle('cargado', nuevo);
-      const lbl = card.querySelector('.switch-lbl');
-      if (lbl) lbl.textContent = nuevo ? 'Cargado' : 'Cargar';
+    const row = cb.closest('.fila');
+    if (row) {
+      row.classList.toggle('cargado', nuevo);
+      const lbl = row.querySelector('.sw-lbl');
+      if (lbl) lbl.textContent = nuevo ? 'Listo' : 'Cargar';
     }
     actualizarBadges();
-    mostrarToast(nuevo ? '✓ Marcado como cargado' : 'Desmarcado', 'ok');
+    toast(nuevo ? '✓ Marcado como cargado' : 'Desmarcado', 'ok');
   };
 
   const s = document.createElement('script');
   s.id  = '_jck_' + fila + '_' + grupo;
-  s.src = WEBAPP_URL + '?accion=check&fila=' + fila + '&grupo=' + grupo + '&valor=' + nuevo + '&callback=' + cbName;
-  s.onerror = () => { clearTimeout(t); checkbox.disabled = false; checkbox.checked = !nuevo; mostrarToast('Error de conexión', 'err'); };
+  s.src = WEBAPP + '?accion=check&fila=' + fila + '&grupo=' + grupo + '&valor=' + nuevo + '&callback=' + cbName;
+  s.onerror = () => { clearTimeout(t); cb.disabled = false; cb.checked = !nuevo; toast('Error de conexión', 'err'); };
   document.body.appendChild(s);
 }
 
-// ── HELPERS ──────────────────────────────────────────────
+// ── HELPERS ──────────────────────────────────────────────────────
 function esc(str) {
   if (!str) return '';
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-function copiarSku(sku, btn) {
+function copiar(sku, btn) {
   navigator.clipboard.writeText(sku).then(() => {
-    btn.classList.add('copiado'); btn.textContent = '✓ Copiado';
-    setTimeout(() => { btn.classList.remove('copiado'); btn.innerHTML = `<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copiar`; }, 1800);
+    btn.classList.add('ok'); btn.textContent = '✓ Copiado';
+    setTimeout(() => {
+      btn.classList.remove('ok');
+      btn.innerHTML = `<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copiar`;
+    }, 1800);
   });
 }
 
 function lbAbrir(url) {
   if (!url) return;
   document.getElementById('lbImg').src = url;
-  document.getElementById('lightbox').classList.add('visible');
+  document.getElementById('lb').classList.add('on');
   document.body.style.overflow = 'hidden';
 }
 function lbCerrar(e) {
-  if (e && e.target !== e.currentTarget && e.target.id !== 'lbImg') return;
-  document.getElementById('lightbox').classList.remove('visible');
+  if (e && e.target !== e.currentTarget && e.target.tagName !== 'IMG') return;
+  document.getElementById('lb').classList.remove('on');
   document.body.style.overflow = '';
 }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') lbCerrar(null); });
 
 let _tt;
-function mostrarToast(msg, tipo) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.className = 'toast visible ' + (tipo||'');
-  clearTimeout(_tt); _tt = setTimeout(() => t.className = 'toast', 2500);
+function toast(msg, tipo) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = 'toast on ' + (tipo||'');
+  clearTimeout(_tt); _tt = setTimeout(() => el.className = 'toast', 2500);
 }
 
-function mostrarEstado(tipo, msg) {
-  const cont = document.getElementById('mainContent');
-  if (tipo === 'cargando') cont.innerHTML = `<div class="estado-pantalla"><div class="spinner"></div><h2>Cargando productos…</h2><p>Consultando el sheet</p></div>`;
-  else if (tipo === 'error') cont.innerHTML = `<div class="estado-pantalla"><svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><h2>Error al conectar</h2><p>${msg||''}</p></div>`;
+function setEstado(tipo, msg) {
+  const m = document.getElementById('main');
+  if (tipo === 'cargando') {
+    m.innerHTML = `<div class="estado"><div class="spinner"></div><h2>Cargando productos…</h2><p>El servidor está consultando la API Tate para cada producto. Esto puede tardar entre 20 y 60 segundos.</p></div>`;
+  } else if (tipo === 'error') {
+    m.innerHTML = `<div class="estado"><svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><h2>Error al conectar</h2><p>${msg||''}</p></div>`;
+  }
 }
 
 function actualizarBadges() {
-  const total = todosLosProductos.length;
-  const carg  = todosLosProductos.filter(p => p.cargado).length;
-  document.getElementById('badgeTotal').textContent    = total + ' productos';
-  document.getElementById('badgeCargados').textContent = carg  + ' cargados';
+  const total = todos.length;
+  const carg  = todos.filter(p => p.cargado).length;
+  document.getElementById('badgeTotal').textContent = total + ' productos';
+  document.getElementById('badgeCarg').textContent  = carg  + ' cargados';
 }
 
 function actualizarStats(lista) {
@@ -632,13 +582,20 @@ function actualizarStats(lista) {
   const pend  = total - carg, pct = total > 0 ? Math.round(carg/total*100) : 0;
   const herm  = lista.filter(p=>p.tipo==='hermano').length;
   const gem   = lista.filter(p=>p.tipo==='gemelo').length;
-  document.getElementById('statsBar').innerHTML =
+  document.getElementById('stats').innerHTML =
     `<span>Mostrando <b>${total}</b></span><span>·</span><span><b>${pend}</b> pendientes</span><span>·</span><span><b>${carg}</b> cargados (${pct}%)</span>`
-    + (herm > 0 ? `<span>·</span><span><span class="dot dot-hermano"></span><b>${herm}</b> hermanos</span>` : '')
-    + (gem  > 0 ? `<span>·</span><span><span class="dot dot-gemelo"></span><b>${gem}</b> gemelos</span>`  : '');
+    + (herm>0 ? `<span>·</span><span><span class="dot dot-h"></span><b>${herm}</b> hermanos</span>` : '')
+    + (gem>0  ? `<span>·</span><span><span class="dot dot-g"></span><b>${gem}</b> gemelos</span>`  : '');
 }
 
-function btnReloadGirar(si) {
+function mostrarProgreso(visible, txt, pct) {
+  const wrap = document.getElementById('progresoWrap');
+  wrap.classList.toggle('visible', visible);
+  if (txt) document.getElementById('progresoTxt').textContent = txt;
+  if (pct !== undefined) document.getElementById('progresoBarra').style.width = pct + '%';
+}
+
+function spin(si) {
   document.getElementById('btnReload').classList.toggle('girando', si);
 }
 
