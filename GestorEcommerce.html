@@ -659,8 +659,7 @@ body {
 // CONFIGURACIÓN
 // ═══════════════════════════════════════════════════════
 
-const STORAGE_KEY_URL  = 'tate_gestor_webapp_url';
-const STORAGE_KEY_HOJA = 'tate_gestor_hoja';
+const WEBAPP_URL = 'https://script.google.com/a/macros/tate.com.ar/s/AKfycbwQ5dWCPQPDUINwpqcjn60W86dbX3N08iLsauqU8u8MR2y86mo4ECBl3G5P6r0tRhTZ/exec';
 const API_BASE_URL = 'http://192.168.0.9:4200';
 const APP_BASE_URL = 'http://192.168.0.9:4013';
 
@@ -672,19 +671,9 @@ let cargandoDetalles = false;
 let filtroEstado = 'todos';
 let filtroTipo   = 'todos';
 
-// ── URL de la Web App (guardada en localStorage) ──
+// URL hardcodeada — no requiere configuración del usuario
 function getWebAppUrl() {
-  return localStorage.getItem(STORAGE_KEY_URL) || '';
-}
-function guardarUrl() {
-  const url = document.getElementById('inputUrl').value.trim();
-  if (!url.startsWith('https://script.google.com')) {
-    mostrarToast('URL inválida — debe ser de script.google.com', 'err');
-    return;
-  }
-  localStorage.setItem(STORAGE_KEY_URL, url);
-  document.getElementById('configBanner').style.display = 'none';
-  cargarDatos();
+  return WEBAPP_URL;
 }
 
 // ═══════════════════════════════════════════════════════
@@ -692,13 +681,6 @@ function guardarUrl() {
 // ═══════════════════════════════════════════════════════
 
 async function cargarDatos() {
-  const url = getWebAppUrl();
-  if (!url) {
-    mostrarEstado('config');
-    document.getElementById('configBanner').style.display = 'block';
-    return;
-  }
-
   btnReloadGirar(true);
   mostrarEstado('cargando');
 
@@ -1097,13 +1079,7 @@ function btnReloadGirar(si) {
 // INICIO
 // ═══════════════════════════════════════════════════════
 window.addEventListener('DOMContentLoaded', () => {
-  const url = getWebAppUrl();
-  if (!url) {
-    mostrarEstado('config');
-    document.getElementById('configBanner').style.display = 'block';
-  } else {
-    cargarDatos();
-  }
+  cargarDatos();
 });
 </script>
 </body>
