@@ -924,6 +924,8 @@ function toggleCheck(cb, sku, fila, grupo) {
       toast('Error: ' + (json.error || 'desconocido'), 'err');
       cb.checked = !nuevo; return;
     }
+
+    // Actualizar el producto principal en memoria y en la UI
     const prod = todos.find(p => p.fila === fila && p.grupo === grupo);
     if (prod) prod.cargado = nuevo;
     const row = cb.closest('.fila');
@@ -932,8 +934,28 @@ function toggleCheck(cb, sku, fila, grupo) {
       const lbl = row.querySelector('.sw-lbl');
       if (lbl) lbl.textContent = nuevo ? 'Listo' : 'Cargar';
     }
+
+    // Actualizar hermanos devueltos por el servidor
+    const hermanos = json.hermanos || [];
+    let hermCnt = 0;
+    hermanos.forEach(h => {
+      const hp = todos.find(p => p.fila === h.fila && p.grupo === h.grupo);
+      if (hp) { hp.cargado = h.valor; hermCnt++; }
+
+      // Actualizar el switch del hermano en la UI si está visible
+      const hRow = document.querySelector(`.fila[data-fila="${h.fila}"][data-grupo="${h.grupo}"]`);
+      if (hRow) {
+        hRow.classList.toggle('cargado', h.valor);
+        const hCb = hRow.querySelector('input[type="checkbox"]');
+        if (hCb) hCb.checked = h.valor;
+        const hLbl = hRow.querySelector('.sw-lbl');
+        if (hLbl) hLbl.textContent = h.valor ? 'Listo' : 'Cargar';
+      }
+    });
+
     actualizarBadges();
-    toast(nuevo ? '✓ Marcado como cargado' : 'Desmarcado', 'ok');
+    const msg = nuevo ? '✓ Marcado como cargado' : 'Desmarcado';
+    toast(hermCnt > 0 ? msg + ` (+${hermCnt} hermano${hermCnt > 1 ? 's' : ''})` : msg, 'ok');
   };
 
   const s = document.createElement('script');
