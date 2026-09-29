@@ -285,10 +285,15 @@ window.modoVincular = () => {
 
 function mostrarInfo(d) {
   if (d.text !== ultimoTexto) return;
-  if (d.estado === 'ok') mostrar(d.sku, d.desc || 'Encontrado', '✓', 'ok');
-  else if (d.estado === 'no-encontrado') mostrar(d.text, 'Llegó a la compu, pero no está en el sistema', '⚠️', 'warn');
-  else if (d.estado === 'sin-red') mostrar(d.text, 'Llegó a la compu (no pudo consultar el sistema)', '✓', 'ok');
-  else mostrar(d.text, 'Llegó a la compu', '✓', 'ok');
+  const cod = d.estado === 'ok' ? d.sku : d.text;
+  let desc = d.estado === 'ok' ? (d.desc || 'Encontrado')
+           : d.estado === 'no-encontrado' ? 'No está en el sistema'
+           : 'Llegó a la compu';
+  let icono = d.estado === 'no-encontrado' ? '⚠️' : '✓';
+  let clase = d.estado === 'no-encontrado' ? 'warn' : 'ok';
+  if (d.escrito) desc = '✎ Escrito · ' + desc;
+  if (d.errorEscritura) { desc = 'No se escribió: ' + d.errorEscritura; icono = '⚠️'; clase = 'warn'; }
+  mostrar(cod, desc, icono, clase);
 }
 
 function mostrar(cod, desc, icono, clase) {
