@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<meta name="theme-color" content="#CF1E29" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="Scanner Tate" />
+<title>Scanner Tate</title>
+<link rel="icon" type="image/png" href="https://raw.githubusercontent.com/sebertorello/ScannerTate/main/public/img/icon-512.png" />
+<link rel="apple-touch-icon" href="https://raw.githubusercontent.com/sebertorello/ScannerTate/main/public/img/icon-512.png" />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.5/dist/peerjs.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+:root {
+  --red: #CF1E29; --red-dark: #a01520;
+  --text: #51515C; --text-dark: #343a40; --text-muted: #6c757d;
+  --border: #dee2e6; --bg: #f8f9fa; --white: #ffffff;
+  --green-bg: #d1e7dd; --green-text: #0a3622;
+  --warn-bg: #fff3cd; --warn-text: #856404;
+  --red-bg: #f8d7da; --red-text: #842029;
+}
+html, body { height: 100%; background: #000; color: var(--text); font-family: 'Poppins', sans-serif; overflow: hidden; }
+.app { display: flex; flex-direction: column; height: 100dvh; }
+
+.topbar { background: var(--white); border-bottom: 3px solid var(--red); height: 56px; display: flex; align-items: center; padding: 0 16px; gap: 10px; flex-shrink: 0; }
+.topbar img { height: 28px; mix-blend-mode: multiply; }
+.topbar-title { font-size: 14px; font-weight: 700; color: var(--text-dark); }
+.estado { margin-left: auto; display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 20px; background: var(--bg); border: 1px solid var(--border); color: var(--text-muted); }
+.estado .dot { width: 8px; height: 8px; border-radius: 50%; background: #f0ad4e; }
+.estado.ok { background: var(--green-bg); border-color: var(--green-bg); color: var(--green-text); }
+.estado.ok .dot { background: #28a745; }
+.estado.mal { background: var(--red-bg); border-color: var(--red-bg); color: var(--red-text); }
+.estado.mal .dot { background: var(--red); }
+
+.scanner-wrap { flex: 1; position: relative; background: #000; overflow: hidden; }
+video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.overlay { position: absolute; inset: 0; pointer-events: none; display: flex; align-items: center; justify-content: center; }
+.crosshair { width: min(70vw, 260px); height: min(45vw, 170px); position: relative; }
+.crosshair::before, .crosshair::after, .crosshair span::before, .crosshair span::after { content: ''; position: absolute; width: 24px; height: 24px; border-color: rgba(255,255,255,0.9); border-style: solid; }
+.crosshair::before { top: 0; left: 0; border-width: 3px 0 0 3px; }
+.crosshair::after { top: 0; right: 0; border-width: 3px 3px 0 0; }
+.crosshair span::before { bottom: 0; left: 0; border-width: 0 0 3px 3px; }
+.crosshair span::after { bottom: 0; right: 0; border-width: 0 3px 3px 0; }
+.flash { position: absolute; inset: 0; background: rgba(255,255,255,0.35); opacity: 0; pointer-events: none; transition: opacity 0.05s; }
+.flash.show { opacity: 1; }
+.hint { position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.6); color: #fff; font-size: 12px; padding: 6px 16px; border-radius: 20px; white-space: nowrap; pointer-events: none; }
+
+/* Pantalla sin sala */
+.sin-sala { position: absolute; inset: 0; background: var(--bg); display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 32px; gap: 14px; }
+.sin-sala .icono { font-size: 48px; }
+.sin-sala h2 { font-size: 18px; font-weight: 700; color: var(--text-dark); }
+.sin-sala p { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+
+.bottom { background: var(--white); border-top: 1px solid var(--border); padding: 12px 16px calc(16px + env(safe-area-inset-bottom)); flex-shrink: 0; }
+.ultimo { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; margin-bottom: 12px; min-height: 58px; display: flex; align-items: center; gap: 12px; transition: background 0.2s, border-color 0.2s; }
+.ultimo.ok { background: var(--green-bg); border-color: var(--green-bg); }
+.ultimo.warn { background: var(--warn-bg); border-color: var(--warn-bg); }
+.ultimo-icono { font-size: 20px; flex-shrink: 0; width: 26px; text-align: center; }
+.ultimo-txt { flex: 1; min-width: 0; }
+.ultimo-cod { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; color: var(--text-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ultimo-desc { font-size: 11px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ultimo.ok .ultimo-desc { color: var(--green-text); }
+.ultimo.warn .ultimo-desc { color: var(--warn-text); }
+
+.controles { display: flex; gap: 8px; }
+.btn { flex: 1; font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 600; border-radius: 8px; padding: 12px; cursor: pointer; border: 1px solid var(--border); background: var(--white); color: var(--text-dark); }
+.btn-red { background: var(--red); border-color: var(--red); color: #fff; }
+.btn-dark { background: var(--text-dark); border-color: var(--text-dark); color: #fff; }
+.contador { font-size: 11px; color: var(--text-muted); text-align: center; margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <img src="https://raw.githubusercontent.com/sebertorello/ScannerTate/main/public/img/LogoTate.png" alt="Tate" onerror="this.style.display='none'" />
+    <span class="topbar-title">Scanner</span>
+    <div class="estado" id="estado"><span class="dot"></span><span id="estadoTxt">Conectando…</span></div>
+  </div>
+
+  <div class="scanner-wrap">
+    <video id="video" autoplay playsinline muted></video>
+    <div class="overlay"><div class="crosshair"><span></span></div></div>
+    <div class="flash" id="flash"></div>
+    <div class="hint" id="hint">Apuntá al código</div>
+    <div class="sin-sala" id="sinSala">
+      <div class="icono">🖥️</div>
+      <h2>Falta vincular con una compu</h2>
+      <p>En la compu abrí <b>Scanner</b> desde el Menú Ecommerce y escaneá el QR que aparece, con la cámara del celular o con el botón de abajo.</p>
+      <button class="btn btn-red" style="flex:none; padding:12px 24px" onclick="modoVincular()">Escanear QR de la compu</button>
+    </div>
+  </div>
+
+  <div class="bottom">
+    <div class="ultimo" id="ultimo">
+      <div class="ultimo-icono" id="ultIcono">▦</div>
+      <div class="ultimo-txt">
+        <div class="ultimo-cod" id="ultCod">—</div>
+        <div class="ultimo-desc" id="ultDesc">Ningún escaneo todavía</div>
+      </div>
+    </div>
+    <div class="controles">
+      <button class="btn btn-dark" id="btnCam" onclick="toggleCam()">Pausar</button>
+      <button class="btn" onclick="modoVincular()">Cambiar de compu</button>
+    </div>
+    <div class="contador" id="contador"></div>
+  </div>
+</div>
+
+<script type="module">
+// ══ CONFIGURACIÓN ══════════════════════════════════════════════════════════
+const PREFIJO = 'tate-scanner-';
+
+// ══ SALA ═══════════════════════════════════════════════════════════════════
+const params = new URLSearchParams(location.search);
+let sala = (params.get('sala') || leerLS('scannerSala') || '').toUpperCase();
+let vinculando = !sala;   // si no hay sala, la cámara busca el QR de la compu
+let enviados = 0;
+
+if (sala) {
+  guardarLS('scannerSala', sala);
+  if (!params.get('sala')) history.replaceState(null, '', `?sala=${sala}`);
+}
+
+// ══ CONEXIÓN CON LA COMPU (PeerJS) ═════════════════════════════════════════
+let peer = null, conn = null, conectado = false, reintento = null;
+
+function iniciarPeer() {
+  if (peer) return;
+  peer = new Peer({ debug: 0 });
+  peer.on('open', conectar);
+  peer.on('disconnected', () => setTimeout(() => { if (peer && !peer.destroyed) peer.reconnect(); }, 2000));
+  peer.on('error', err => {
+    if (err.type === 'peer-unavailable') {
+      setEstado('mal', 'Compu no encontrada');
+      reintentar();
+    } else if (['network', 'server-error', 'socket-error'].includes(err.type)) {
+      setEstado('mal', 'Sin internet');
+      reintentar();
+    }
+  });
+}
+
+function conectar() {
+  if (!sala || !peer || !peer.open) return;
+  clearTimeout(reintento);
+  setEstado('', 'Conectando…');
+  if (conn) { try { conn.close(); } catch (e) {} }
+  conn = peer.connect(PREFIJO + sala, { reliable: true });
+  conn.on('open', () => { conectado = true; setEstado('ok', 'Conectado'); });
+  conn.on('data', data => { if (data && data.type === 'info') mostrarInfo(data); });
+  conn.on('close', () => { conectado = false; setEstado('mal', 'Desconectado'); reintentar(); });
+  conn.on('error', () => { conectado = false; reintentar(); });
+}
+
+function reintentar() {
+  clearTimeout(reintento);
+  reintento = setTimeout(() => {
+    if (!peer || peer.destroyed) { peer = null; iniciarPeer(); }
+    else conectar();
+  }, 3000);
+}
+
+function setEstado(clase, texto) {
+  document.getElementById('estado').className = 'estado ' + clase;
+  document.getElementById('estadoTxt').textContent = texto;
+}
+
+// Si la pantalla se apaga y vuelve, reconectar enseguida
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    if (!conectado && sala) reintentar();
+    if (camActiva && !stream) iniciarCam();
+  }
+});
+
+// ══ CÁMARA Y DETECCIÓN (BarcodeDetector + fallback ZXing) ═════════════════
+const video = document.getElementById('video');
+let stream = null, camActiva = true, rafId = null, ultimoTexto = '', ultimoMomento = 0;
+const nativo = 'BarcodeDetector' in window;
+const detector = nativo ? new BarcodeDetector({ formats: ['qr_code','ean_13','ean_8','code_128','code_39','code_93','codabar','itf','upc_a','upc_e','data_matrix'] }) : null;
+let zxing = null, zxingControl = null;
+
+async function iniciarCam() {
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } } });
+    video.srcObject = stream;
+    await video.play();
+    if (nativo) loopNativo();
+    else await loopZXing();
+  } catch (e) {
+    document.getElementById('hint').textContent = 'Sin permiso de cámara';
+    alert('No se pudo abrir la cámara. Revisá que el navegador tenga permiso.\n\n' + e.message);
+  }
+}
+
+function pararCam() {
+  cancelAnimationFrame(rafId);
+  if (zxingControl) { try { zxingControl.stop(); } catch (e) {} zxingControl = null; }
+  if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+  video.srcObject = null;
+}
+
+async function loopNativo() {
+  if (!stream) return;
+  if (video.readyState === video.HAVE_ENOUGH_DATA) {
+    try {
+      const codigos = await detector.detect(video);
+      if (codigos.length) detectado(codigos[0].rawValue, codigos[0].format);
+    } catch (e) {}
+  }
+  rafId = requestAnimationFrame(loopNativo);
+}
+
+async function loopZXing() {
+  if (!zxing) {
+    const { BrowserMultiFormatReader } = await import('https://cdn.jsdelivr.net/npm/@zxing/browser@0.1.5/esm/index.js');
+    zxing = new BrowserMultiFormatReader();
+  }
+  zxingControl = await zxing.decodeFromVideoElement(video, (res) => {
+    if (res && stream) detectado(res.getText(), String(res.getBarcodeFormat?.() ?? 'código'));
+  });
+}
+
+window.toggleCam = () => {
+  camActiva = !camActiva;
+  const btn = document.getElementById('btnCam');
+  if (camActiva) { iniciarCam(); btn.textContent = 'Pausar'; btn.className = 'btn btn-dark'; document.getElementById('hint').textContent = vinculando ? 'Apuntá al QR de la compu' : 'Apuntá al código'; }
+  else { pararCam(); btn.textContent = 'Reanudar'; btn.className = 'btn btn-red'; document.getElementById('hint').textContent = 'Cámara pausada'; }
+};
+
+// ══ QUÉ HACER CON LO DETECTADO ═════════════════════════════════════════════
+function detectado(texto, formato) {
+  texto = String(texto || '').trim();
+  if (!texto) return;
+  const ahora = Date.now();
+  // Mismo código seguido: esperar 2 s. Código distinto: 0,8 s.
+  if (texto === ultimoTexto && ahora - ultimoMomento < 2000) return;
+  if (ahora - ultimoMomento < 800) return;
+  ultimoTexto = texto; ultimoMomento = ahora;
+
+  // ¿Es el QR de vinculación de una compu?
+  const nuevaSala = salaDesdeTexto(texto);
+  if (nuevaSala) { cambiarSala(nuevaSala); feedback(); return; }
+  if (vinculando) return; // sin compu vinculada no se manda nada
+
+  feedback();
+  mostrar(texto, conectado ? 'Enviado, buscando…' : 'Sin conexión: no llegó a la compu', conectado ? '⏳' : '⚠️', conectado ? '' : 'warn');
+  if (conectado && conn) {
+    conn.send({ type: 'scan', text: texto, format: formato });
+    enviados++;
+    document.getElementById('contador').textContent = `${enviados} código${enviados > 1 ? 's' : ''} enviados en esta sesión`;
+  }
+}
+
+function salaDesdeTexto(texto) {
+  try {
+    const u = new URL(texto);
+    if (!/ScannerCelu\.html$/i.test(u.pathname)) return null;
+    const s = (u.searchParams.get('sala') || '').toUpperCase();
+    return /^[A-Z0-9]{4,12}$/.test(s) ? s : null;
+  } catch (e) { return null; }
+}
+
+function cambiarSala(nueva) {
+  sala = nueva;
+  vinculando = false;
+  guardarLS('scannerSala', sala);
+  history.replaceState(null, '', `?sala=${sala}`);
+  document.getElementById('sinSala').style.display = 'none';
+  document.getElementById('hint').textContent = 'Apuntá al código';
+  mostrar('Vinculado ✓', 'Sala ' + sala + ' · ya podés escanear', '🔗', 'ok');
+  iniciarPeer();
+  conectar();
+}
+
+window.modoVincular = () => {
+  vinculando = true;
+  document.getElementById('sinSala').style.display = 'none';
+  document.getElementById('hint').textContent = 'Apuntá al QR de la compu';
+  if (!camActiva) window.toggleCam();
+};
+
+function mostrarInfo(d) {
+  if (d.text !== ultimoTexto) return;
+  if (d.estado === 'ok') mostrar(d.sku, d.desc || 'Encontrado', '✓', 'ok');
+  else if (d.estado === 'no-encontrado') mostrar(d.text, 'Llegó a la compu, pero no está en el sistema', '⚠️', 'warn');
+  else if (d.estado === 'sin-red') mostrar(d.text, 'Llegó a la compu (no pudo consultar el sistema)', '✓', 'ok');
+  else mostrar(d.text, 'Llegó a la compu', '✓', 'ok');
+}
+
+function mostrar(cod, desc, icono, clase) {
+  document.getElementById('ultCod').textContent = cod;
+  document.getElementById('ultDesc').textContent = desc;
+  document.getElementById('ultIcono').textContent = icono;
+  document.getElementById('ultimo').className = 'ultimo ' + (clase || '');
+}
+
+let audioCtx;
+function feedback() {
+  const f = document.getElementById('flash');
+  f.classList.add('show'); setTimeout(() => f.classList.remove('show'), 120);
+  if (navigator.vibrate) navigator.vibrate(60);
+  try {
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.frequency.value = 1800; osc.type = 'sine';
+    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
+    osc.start(); osc.stop(audioCtx.currentTime + 0.08);
+  } catch (e) {}
+}
+
+function leerLS(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+function guardarLS(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+
+// ══ INICIO ═════════════════════════════════════════════════════════════════
+if (sala) iniciarPeer();
+else { document.getElementById('sinSala').style.display = 'flex'; setEstado('mal', 'Sin vincular'); }
+iniciarCam();
+</script>
+</body>
+</html>
