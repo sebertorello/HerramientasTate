@@ -100,6 +100,8 @@
   .badge-ok      { background: var(--green-bg); color: var(--green-text); }
   .badge-warn    { background: var(--warn-bg);  color: var(--warn-text); }
   .badge-invalid { background: var(--red-bg);   color: var(--red-text); }
+  .badge-conv    { background: #dbeafe;         color: #1e3a8a; }
+  .badge-gris    { background: #e9ecef;         color: #495057; }
 
   /* ALERT */
   .alert { padding: 10px 14px; border-radius: 5px; font-size: 12px; display: flex; align-items: flex-start; gap: 8px; }
@@ -200,7 +202,7 @@
       <div class="tool-view active" id="tool-renombrador">
         <div>
           <div class="page-title">Renombrador de archivos</div>
-          <div class="page-sub">Limpia sufijos incorrectos · conserva la extensión · solo imágenes</div>
+          <div class="page-sub">Convierte códigos de proveedor (EAN) a código interno · quita el "-1" · conserva la extensión · solo imágenes</div>
         </div>
 
         <div class="card">
@@ -239,11 +241,16 @@
               <tbody id="ren-tbody"></tbody>
             </table>
           </div>
+          <div id="ren-api-wrap"></div>
           <div id="ren-invalid-wrap"></div>
           <div class="card-footer">
             <button class="btn btn-blue" id="ren-apply-btn" onclick="applyRenames()">
               <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
               Aplicar renombres
+            </button>
+            <button class="btn btn-ghost hidden" id="ren-retry-btn" onclick="reintentarRen()">
+              <svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
+              Reintentar consultas fallidas
             </button>
             <button class="btn btn-ghost" onclick="selectFolder('ren')">
               <svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
@@ -769,60 +776,206 @@ function showTool(id, el) {
 // ══════════════════════════════════════════════════════
 // HERRAMIENTA 1: RENOMBRADOR
 // ══════════════════════════════════════════════════════
-function cleanName(base) {
-  const validFull = /^(\d{13})(-([2-9]|[1-9]\d+))?$/;
-  if (validFull.test(base)) return { newBase: base, changed: false, invalid: false };
+// ── Consulta de códigos a la API local (la usan el Renombrador y el Conversor) ──
+// Resultado de consultarSku:
+//   { estado:'ok', sku }        → la API conoce el código
+//   { estado:'noencontrado' }   → la API respondió, pero no existe ese código
+//   { estado:'error', msg }     → no se pudo consultar (red, tiempo, servidor). NO se da por "interno".
+const skuCache = new Map();           // solo guarda respuestas definitivas (nunca errores)
+const SKU_VALIDO = /^[0-9A-Za-z_-]{6,20}$/;
 
-  // "-1" al final solo → quitar
-  if (/^(\d{13})-1$/.test(base))
-    return { newBase: base.replace(/-1$/,''), changed: true, invalid: false };
+function extraerSku(j) {
+  if (!j) return '';
+  if (Array.isArray(j)) j = j[0];
+  if (!j) return '';
+  const v = (j.sku !== undefined && j.sku !== null) ? j.sku : (j.data && j.data.sku);
+  return v ? String(v).trim() : '';
+}
+function esperar(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-  // 13 dígitos + sufijo opcional válido + basura → extraer la parte válida
-  const m = base.match(/^(\d{13}(-[2-9]|-[1-9]\d+)?)/);
-  if (m && m[0] !== base) return { newBase: m[1], changed: true, invalid: false };
+async function consultarSku(code) {
+  if (skuCache.has(code)) return skuCache.get(code);
+  let ultimoError = 'sin respuesta';
+  for (let intento = 1; intento <= 3; intento++) {
+    const ctrl  = new AbortController();
+    const reloj = setTimeout(() => ctrl.abort(), 10000);
+    try {
+      const res = await fetch(CV_API + encodeURIComponent(code), { headers: { 'Accept': 'application/json' }, signal: ctrl.signal, cache: 'no-store' });
+      clearTimeout(reloj);
+      if (res.ok) {
+        let json = null; try { json = await res.json(); } catch (_) {}
+        const sku = extraerSku(json);
+        let r;
+        if (!sku)                    r = { estado: 'noencontrado' };
+        else if (!SKU_VALIDO.test(sku)) r = { estado: 'error', msg: 'la API devolvió un SKU raro: ' + sku };
+        else                         r = { estado: 'ok', sku };
+        if (r.estado !== 'error') skuCache.set(code, r);
+        return r;
+      }
+      if (res.status === 404 || res.status === 400 || res.status === 204) {
+        const r = { estado: 'noencontrado' };
+        skuCache.set(code, r);
+        return r;
+      }
+      ultimoError = 'el servidor respondió HTTP ' + res.status;   // 5xx, 429… → se reintenta
+    } catch (e) {
+      clearTimeout(reloj);
+      ultimoError = e && e.name === 'AbortError' ? 'la API tardó demasiado' : 'no hay conexión con la API';
+    }
+    if (intento < 3) await esperar(500 * intento);
+  }
+  return { estado: 'error', msg: ultimoError };
+}
 
-  // 13 dígitos solos + basura
-  const m2 = base.match(/^(\d{13})/);
-  if (m2 && m2[0] !== base) return { newBase: m2[1], changed: true, invalid: false };
+// Los códigos internos de Tate tienen 13 dígitos y empiezan con 000.
+function esInternoPorFormato(code) { return /^000\d{10}$/.test(code); }
 
-  return { newBase: base, changed: false, invalid: true };
+// tipo: 'convertido' | 'interno' | 'noencontrado' | 'error'
+async function resolverCodigo(code) {
+  const r = await consultarSku(code);
+  if (r.estado === 'ok')           return { tipo: r.sku === code ? 'interno' : 'convertido', sku: r.sku };
+  if (r.estado === 'noencontrado') return esInternoPorFormato(code) ? { tipo: 'interno', sku: code } : { tipo: 'noencontrado', sku: '' };
+  return { tipo: 'error', sku: '', msg: r.msg };
+}
+
+// Procesa una lista con un máximo de "n" consultas al mismo tiempo
+async function conPool(items, n, fn) {
+  let i = 0;
+  const obreros = Array.from({ length: Math.min(n, items.length) }, async () => {
+    while (i < items.length) { const k = i++; await fn(items[k], k); }
+  });
+  await Promise.all(obreros);
+}
+
+// ══════════════════════════════════════════════════════
+// HERRAMIENTA 1: RENOMBRADOR  (EAN → código interno, sin "-1")
+// ══════════════════════════════════════════════════════
+// Reglas del nombre: <código de 8 a 14 dígitos>[-N] + cualquier basura.
+//   · N = número de foto. La foto 1 NO lleva sufijo; de la 2 en adelante sí (-2, -3…).
+//   · Lo que venga después (ej. " (copia)") se descarta.
+let renCodigos = new Map();      // código del archivo → resultado de resolverCodigo
+let renConsultando = false;
+
+function parsearNombre(base) {
+  const m = base.match(/^(\d{8,14})(?:-(\d{1,3}))?(?!\d)/);
+  if (!m) return null;
+  const n = m[2] ? parseInt(m[2], 10) : 1;
+  return { code: m[1], n: n >= 2 ? n : 1 };
 }
 
 async function scanRen() {
   renFiles = [];
+  renCodigos = new Map();
+  const todos = new Set();                       // todos los nombres de la carpeta (para detectar choques)
   for await (const [name, handle] of renDirHandle.entries()) {
-    if (handle.kind !== 'file' || !isImage(name)) continue;
+    if (handle.kind !== 'file') continue;
+    todos.add(name.toLowerCase());
+    if (!isImage(name)) continue;
     const dot  = name.lastIndexOf('.');
     const base = dot >= 0 ? name.slice(0, dot) : name;
     const ext  = dot >= 0 ? name.slice(dot) : '';
-    const { newBase, changed, invalid } = cleanName(base);
-    renFiles.push({ handle, name, newName: newBase + ext, changed, invalid });
+    renFiles.push({ handle, name, ext, parsed: parsearNombre(base), newName: name, estado: 'pendiente', msg: '' });
   }
+  renFiles.sort((x, y) => x.name.localeCompare(y.name, undefined, { numeric: true }));
+  renNombresCarpeta = todos;
   if (!renFiles.length) {
     setStatus('No se encontraron imágenes en esa carpeta', '#856404');
     hide('ren-preview-card'); return;
   }
-  renderRenPreview();
+  hide('ren-result-card');
+  await consultarRen();
+}
+let renNombresCarpeta = new Set();
+
+async function consultarRen() {
+  const codigos = [...new Set(renFiles.filter(f => f.parsed).map(f => f.parsed.code))]
+    .filter(c => { const r = renCodigos.get(c); return !r || r.tipo === 'error'; });
+  renConsultando = true;
+  recalcularRen(); renderRenPreview();
+  let hechos = 0;
+  await conPool(codigos, 4, async code => {
+    renCodigos.set(code, await resolverCodigo(code));
+    hechos++;
+    setStatus(`Consultando códigos… ${hechos} de ${codigos.length}`, '#3B82F6');
+  });
+  renConsultando = false;
+  recalcularRen(); renderRenPreview();
+}
+
+function reintentarRen() { consultarRen(); }
+
+// Calcula el nombre nuevo y el estado de cada archivo
+function recalcularRen() {
+  renFiles.forEach(f => {
+    f.newName = f.name; f.msg = '';
+    if (!f.parsed) { f.estado = 'invalido'; return; }
+    const r = renCodigos.get(f.parsed.code);
+    if (!r)                         { f.estado = 'pendiente'; return; }
+    if (r.tipo === 'error')         { f.estado = 'error'; f.msg = r.msg || ''; return; }
+    if (r.tipo === 'noencontrado')  { f.estado = 'noencontrado'; return; }
+    f.newName = r.sku + (f.parsed.n >= 2 ? '-' + f.parsed.n : '') + f.ext;
+    if (f.newName === f.name)       f.estado = 'ok';
+    else if (r.tipo === 'convertido') f.estado = 'convertido';
+    else                            f.estado = 'corregido';
+  });
+  // Choques: dos archivos con el mismo nombre nuevo, o un nombre nuevo que ya existe en la carpeta
+  const cuenta = new Map();
+  renFiles.forEach(f => {
+    if (f.estado === 'convertido' || f.estado === 'corregido') {
+      const k = f.newName.toLowerCase(); cuenta.set(k, (cuenta.get(k) || 0) + 1);
+    }
+  });
+  renFiles.forEach(f => {
+    if (f.estado !== 'convertido' && f.estado !== 'corregido') return;
+    const k = f.newName.toLowerCase();
+    if (cuenta.get(k) > 1)            { f.estado = 'conflicto'; f.msg = 'otro archivo quedaría con ese mismo nombre'; }
+    else if (renNombresCarpeta.has(k)) { f.estado = 'conflicto'; f.msg = 'ya existe un archivo con ese nombre en la carpeta'; }
+  });
 }
 
 function renderRenPreview() {
   document.getElementById('ren-count').textContent = renFiles.length;
   const tbody = document.getElementById('ren-tbody');
   tbody.innerHTML = '';
-  let invalids = [], changes = 0, ok = 0;
+  const c = { ok:0, corregido:0, convertido:0, invalido:0, noencontrado:0, error:0, conflicto:0, pendiente:0 };
+  const invalids = [], sinCodigo = [], conflictos = [];
 
   renFiles.forEach(f => {
-    const tr = document.createElement('tr');
+    c[f.estado]++;
     let badge;
-    if (f.invalid)       { badge = '<span class="badge badge-invalid">✗ nombre inválido</span>'; invalids.push(f.name); }
-    else if (f.changed)  { badge = '<span class="badge badge-warn">⚠ corregido</span>'; changes++; }
-    else                 { badge = '<span class="badge badge-ok">✓ ok</span>'; ok++; }
-    tr.innerHTML = `<td class="mono">${esc(f.name)}</td><td class="arrow">→</td><td class="mono">${esc(f.newName)}</td><td>${badge}</td>`;
+    switch (f.estado) {
+      case 'convertido':   badge = '<span class="badge badge-conv">🔄 convertido</span>'; break;
+      case 'corregido':    badge = '<span class="badge badge-warn">⚠ corregido</span>'; break;
+      case 'ok':           badge = '<span class="badge badge-ok">✓ ok</span>'; break;
+      case 'invalido':     badge = '<span class="badge badge-invalid">✗ nombre inválido</span>'; invalids.push(f.name); break;
+      case 'noencontrado': badge = '<span class="badge badge-invalid">❌ código no encontrado</span>'; sinCodigo.push(f.name); break;
+      case 'error':        badge = '<span class="badge badge-invalid">⚠ no se pudo consultar</span>'; break;
+      case 'conflicto':    badge = '<span class="badge badge-invalid" title="' + esc(f.msg) + '">⛔ nombre repetido</span>'; conflictos.push(`${f.name} → ${f.newName} (${f.msg})`); break;
+      default:             badge = '<span class="badge badge-gris">… consultando</span>';
+    }
+    const tr = document.createElement('tr');
+    const nuevo = (f.estado === 'ok' || f.estado === 'convertido' || f.estado === 'corregido' || f.estado === 'conflicto') ? esc(f.newName) : '<span style="color:var(--text-muted);">— sin cambios —</span>';
+    tr.innerHTML = `<td class="mono">${esc(f.name)}</td><td class="arrow">→</td><td class="mono">${nuevo}</td><td>${badge}</td>`;
     tbody.appendChild(tr);
   });
 
-  const wrap = document.getElementById('ren-invalid-wrap');
-  wrap.innerHTML = invalids.length
+  // Avisos
+  let avisos = '';
+  const caja = (cls, html) => `<div style="padding:12px 16px;border-top:1px solid var(--border);"><div class="alert ${cls}"><div>${html}</div></div></div>`;
+  if (c.error) {
+    const https = location.protocol === 'https:';
+    avisos += caja('alert-error', `<strong>No se pudo consultar ${c.error} archivo${c.error>1?'s':''}.</strong> Esos archivos NO se tocan.<br>`
+      + `Revisá que estés dentro de la red de Tate y que el servidor 192.168.0.9 esté prendido, y tocá <strong>“Reintentar consultas fallidas”</strong>.`
+      + (https ? `<br><strong>Ojo:</strong> esta página está abierta por <em>https</em> y la API interna es <em>http</em>: el navegador bloquea esa consulta. Abrí la herramienta desde la dirección interna (http://192.168.0.9…).` : ''));
+  }
+  if (c.noencontrado) {
+    avisos += caja('alert-warn', `<strong>Código no encontrado en el sistema (se dejan sin cambios):</strong><br><span class="mono" style="font-size:11px;">${sinCodigo.map(esc).join(', ')}</span>`);
+  }
+  if (c.conflicto) {
+    avisos += caja('alert-warn', `<strong>Nombre repetido (no se renombran, para no pisar fotos):</strong><br><span class="mono" style="font-size:11px;">${conflictos.map(esc).join('<br>')}</span>`);
+  }
+  document.getElementById('ren-api-wrap').innerHTML = avisos;
+  document.getElementById('ren-invalid-wrap').innerHTML = invalids.length
     ? `<div style="padding:12px 16px;border-top:1px solid var(--border);">
         <div class="alert alert-warn">
           <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
@@ -830,33 +983,52 @@ function renderRenPreview() {
           <span class="mono" style="font-size:11px;">${invalids.map(esc).join(', ')}</span></div>
         </div></div>` : '';
 
-  document.getElementById('ren-apply-btn').disabled = changes === 0;
-  setStatus(`${changes} correcciones · ${ok} ok · ${invalids.length} inválidos`);
+  const aRenombrar = c.convertido + c.corregido;
+  document.getElementById('ren-apply-btn').disabled = renConsultando || aRenombrar === 0;
+  document.getElementById('ren-retry-btn').classList.toggle('hidden', c.error === 0 || renConsultando);
+  if (renConsultando) setStatus('Consultando códigos a la API…', '#3B82F6');
+  else setStatus(`${c.convertido} convertidos · ${c.corregido} corregidos · ${c.ok} ok · ${c.noencontrado + c.invalido + c.conflicto} sin cambiar · ${c.error} con error de consulta`,
+                 (c.error || c.noencontrado || c.conflicto) ? '#856404' : '#28a745');
   show('ren-preview-card');
   hide('ren-result-card');
 }
 
+// Renombra un archivo. Primero intenta mover (rápido y conserva la fecha); si el navegador no puede, copia y borra.
+async function renombrarArchivo(f) {
+  // Seguridad: nunca pisar un archivo que ya exista con ese nombre
+  let existe = true;
+  try { await renDirHandle.getFileHandle(f.newName); } catch (e) { existe = false; }
+  if (existe) throw new Error('ya existe un archivo con ese nombre');
+  if (typeof f.handle.move === 'function') {
+    try { await f.handle.move(f.newName); return; } catch (_) { /* sigue con copiar y borrar */ }
+  }
+  const file = await f.handle.getFile();
+  const nh   = await renDirHandle.getFileHandle(f.newName, { create: true });
+  const w    = await nh.createWritable();
+  await w.write(file); await w.close();
+  const copia = await nh.getFile();
+  if (copia.size !== file.size) throw new Error('la copia quedó incompleta; no se borró el original');
+  await renDirHandle.removeEntry(f.name);
+}
+
 async function applyRenames() {
-  const toRename = renFiles.filter(f => f.changed);
-  let done = 0, errors = [];
-  for (const f of toRename) {
-    try {
-      const file = await f.handle.getFile();
-      const buf  = await file.arrayBuffer();
-      const nh   = await renDirHandle.getFileHandle(f.newName, { create: true });
-      const w    = await nh.createWritable();
-      await w.write(buf); await w.close();
-      if (f.name !== f.newName) await renDirHandle.removeEntry(f.name);
-      done++;
-    } catch(e) { errors.push(`${f.name}: ${e.message}`); }
+  const toRename = renFiles.filter(f => f.estado === 'convertido' || f.estado === 'corregido');
+  document.getElementById('ren-apply-btn').disabled = true;
+  let done = 0, conv = 0, errors = [];
+  for (let i = 0; i < toRename.length; i++) {
+    const f = toRename[i];
+    setStatus(`Renombrando ${i + 1} de ${toRename.length}…`, '#3B82F6');
+    try { await renombrarArchivo(f); done++; if (f.estado === 'convertido') conv++; }
+    catch (e) { errors.push(`${f.name} → ${f.newName}: ${e.message}`); }
   }
   let html = done
-    ? `<div class="alert alert-ok" style="margin-bottom:10px;"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg><div>${done} archivo${done>1?'s':''} renombrado${done>1?'s':''} correctamente.</div></div>` : '';
+    ? `<div class="alert alert-ok" style="margin-bottom:10px;"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg><div>${done} archivo${done>1?'s':''} renombrado${done>1?'s':''} correctamente (${conv} convertido${conv!==1?'s':''} a código interno).</div></div>` : '';
   if (errors.length)
     html += `<div class="alert alert-error"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><div><strong>Errores:</strong><br>${errors.map(esc).join('<br>')}</div></div>`;
+  html += `<div class="btn-row" style="margin-top:12px;"><button class="btn btn-ghost" onclick="scanRen()">Revisar la carpeta de nuevo</button></div>`;
   document.getElementById('ren-result-body').innerHTML = html;
   show('ren-result-card'); hide('ren-preview-card');
-  setStatus(`✓ ${done} renombrados · ${errors.length} errores`, done > 0 ? '#28a745' : '#CF1E29');
+  setStatus(`✓ ${done} renombrados · ${errors.length} errores`, done > 0 && !errors.length ? '#28a745' : '#CF1E29');
 }
 
 // ══════════════════════════════════════════════════════
@@ -1328,19 +1500,8 @@ async function cvConvertir() {
 }
 
 async function cvConsultar(code) {
-  try {
-    const res = await fetch(CV_API + encodeURIComponent(code), { headers:{'Accept':'application/json'} });
-    if (res.ok) {
-      const json = await res.json();
-      if (json && json.sku) {
-        const sku = String(json.sku).trim();
-        return sku === code ? {tipo:'interno',sku:code} : {tipo:'convertido',sku};
-      }
-    }
-    return /^\d{13}$/.test(code) ? {tipo:'interno',sku:code} : {tipo:'error',sku:''};
-  } catch(e) {
-    return /^\d{13}$/.test(code) ? {tipo:'interno',sku:code} : {tipo:'error',sku:''};
-  }
+  // Mismo criterio que el Renombrador: un error de consulta NUNCA se da por "interno".
+  return resolverCodigo(code);
 }
 
 function cvRenderResults(resultados, conv, int, err) {
@@ -1349,11 +1510,11 @@ function cvRenderResults(resultados, conv, int, err) {
   document.getElementById('cv-stats-row').innerHTML = `
     <span class="badge badge-ok">✅ ${int} internos</span>
     <span class="badge badge-warn">🔄 ${conv} convertidos</span>
-    ${err>0?`<span class="badge badge-invalid">❌ ${err} no encontrados</span>`:''}`;
+    ${err>0?`<span class="badge badge-invalid">❌ ${err} no encontrados o con error</span>`:''}`;
   const body = document.getElementById('cv-tbl-body'); body.innerHTML='';
   resultados.forEach((r,i) => {
     const tr = document.createElement('tr');
-    const badge = r.tipo==='convertido'?'<span class="badge badge-warn">🔄 Convertido</span>':r.tipo==='interno'?'<span class="badge badge-ok">✅ Interno</span>':'<span class="badge badge-invalid">❌ No encontrado</span>';
+    const badge = r.tipo==='convertido'?'<span class="badge badge-warn">🔄 Convertido</span>':r.tipo==='interno'?'<span class="badge badge-ok">✅ Interno</span>':r.tipo==='error'?'<span class="badge badge-invalid" title="'+esc(r.msg||'')+'">⚠ Error de consulta</span>':'<span class="badge badge-invalid">❌ No encontrado</span>';
     const skuCell = r.sku ? `<span class="mono" style="color:var(--green-text);font-weight:600;">${esc(r.sku)}</span>` : '<span style="color:var(--text-muted);">—</span>';
     tr.innerHTML = `<td>${i+1}</td><td class="mono">${esc(r.code)}</td><td>${skuCell}</td><td>${badge}</td>`;
     body.appendChild(tr);
