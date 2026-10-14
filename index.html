@@ -850,23 +850,31 @@ async function conPool(items, n, fn) {
 // ══════════════════════════════════════════════════════
 // HERRAMIENTA 1: RENOMBRADOR  (EAN → código interno, sin "-1")
 // ══════════════════════════════════════════════════════
-// Reglas del nombre: <código de 6 a 20 letras/números>[-N] + cualquier basura.
+// Reglas del nombre: <código de proveedor>[-N]; ver candidatosNombre().
 //   · N = número de foto. La foto 1 NO lleva sufijo; de la 2 en adelante sí (-2, -3…).
 //   · Lo que venga después (ej. " (copia)") se descarta.
-let renCodigos = new Map();      // código del archivo → resultado de resolverCodigo
 let renConsultando = false;
 
-function parsearNombre(base) {
-  // Código de proveedor: letras y/o números (ej. 7799157102837, 272115029610225, 27211502961M725)
-  const m = base.match(/^([0-9A-Za-z]{6,20})(?:-(\d{1,3}))?(?![0-9A-Za-z])/);
-  if (!m) return null;
-  const n = m[2] ? parseInt(m[2], 10) : 1;
-  return { code: m[1], n: n >= 2 ? n : 1 };
+// Un código de proveedor puede tener letras, números, guiones, puntos y guiones bajos (hasta 40 caracteres).
+// El guion es ambiguo: puede ser parte del código ("ABC-123") o el número de foto ("7799157102837-2").
+// Por eso se arman dos candidatos y se prueban contra la API en este orden:
+//   1) quitando un "-N" final (N de 1 o 2 cifras) como número de foto
+//   2) el nombre entero como código (foto 1)
+// Lo que venga después de un espacio o un paréntesis (ej. " (copia)") se descarta.
+function candidatosNombre(base) {
+  const token = base.trim().split(/[\s(]/)[0];
+  if (token.length < 6 || token.length > 40) return null;
+  if (!/^[0-9A-Za-z][0-9A-Za-z._-]*$/.test(token)) return null;
+  if (!/\d/.test(token)) return null;                       // un código siempre tiene algún número
+  const cand = [];
+  const m = token.match(/^(.+)-(\d{1,2})$/);
+  if (m && m[1].length >= 6) cand.push({ code: m[1], n: Math.max(parseInt(m[2], 10), 1) });
+  cand.push({ code: token, n: 1 });
+  return cand;
 }
 
 async function scanRen() {
   renFiles = [];
-  renCodigos = new Map();
   const todos = new Set();                       // todos los nombres de la carpeta (para detectar choques)
   for await (const [name, handle] of renDirHandle.entries()) {
     if (handle.kind !== 'file') continue;
@@ -875,7 +883,7 @@ async function scanRen() {
     const dot  = name.lastIndexOf('.');
     const base = dot >= 0 ? name.slice(0, dot) : name;
     const ext  = dot >= 0 ? name.slice(dot) : '';
-    renFiles.push({ handle, name, ext, parsed: parsearNombre(base), newName: name, estado: 'pendiente', msg: '' });
+    renFiles.push({ handle, name, ext, cand: candidatosNombre(base), res: null, newName: name, estado: 'pendiente', msg: '' });
   }
   renFiles.sort((x, y) => x.name.localeCompare(y.name, undefined, { numeric: true }));
   renNombresCarpeta = todos;
@@ -888,16 +896,25 @@ async function scanRen() {
 }
 let renNombresCarpeta = new Set();
 
+// Busca para un archivo el primer candidato que la API reconozca
+async function resolverArchivo(f) {
+  for (const c of f.cand) {
+    const r = await resolverCodigo(c.code);
+    if (r.tipo === 'error') return { tipo: 'error', msg: r.msg };
+    if (r.tipo === 'convertido' || r.tipo === 'interno') return { tipo: r.tipo, sku: r.sku, n: c.n };
+  }
+  return { tipo: 'noencontrado' };
+}
+
 async function consultarRen() {
-  const codigos = [...new Set(renFiles.filter(f => f.parsed).map(f => f.parsed.code))]
-    .filter(c => { const r = renCodigos.get(c); return !r || r.tipo === 'error'; });
+  const pendientes = renFiles.filter(f => f.cand && (!f.res || f.res.tipo === 'error'));
   renConsultando = true;
   recalcularRen(); renderRenPreview();
   let hechos = 0;
-  await conPool(codigos, 4, async code => {
-    renCodigos.set(code, await resolverCodigo(code));
+  await conPool(pendientes, 4, async f => {
+    f.res = await resolverArchivo(f);
     hechos++;
-    setStatus(`Consultando códigos… ${hechos} de ${codigos.length}`, '#3B82F6');
+    setStatus(`Consultando códigos… ${hechos} de ${pendientes.length}`, '#3B82F6');
   });
   renConsultando = false;
   recalcularRen(); renderRenPreview();
@@ -909,15 +926,14 @@ function reintentarRen() { consultarRen(); }
 function recalcularRen() {
   renFiles.forEach(f => {
     f.newName = f.name; f.msg = '';
-    if (!f.parsed) { f.estado = 'invalido'; return; }
-    const r = renCodigos.get(f.parsed.code);
-    if (!r)                         { f.estado = 'pendiente'; return; }
-    if (r.tipo === 'error')         { f.estado = 'error'; f.msg = r.msg || ''; return; }
-    if (r.tipo === 'noencontrado')  { f.estado = 'noencontrado'; return; }
-    f.newName = r.sku + (f.parsed.n >= 2 ? '-' + f.parsed.n : '') + f.ext;
-    if (f.newName === f.name)       f.estado = 'ok';
-    else if (r.tipo === 'convertido') f.estado = 'convertido';
-    else                            f.estado = 'corregido';
+    if (!f.cand)                      { f.estado = 'invalido'; return; }
+    if (!f.res)                       { f.estado = 'pendiente'; return; }
+    if (f.res.tipo === 'error')       { f.estado = 'error'; f.msg = f.res.msg || ''; return; }
+    if (f.res.tipo === 'noencontrado'){ f.estado = 'noencontrado'; return; }
+    f.newName = f.res.sku + (f.res.n >= 2 ? '-' + f.res.n : '') + f.ext;
+    if (f.newName === f.name)         f.estado = 'ok';
+    else if (f.res.tipo === 'convertido') f.estado = 'convertido';
+    else                              f.estado = 'corregido';
   });
   // Choques: dos archivos con el mismo nombre nuevo, o un nombre nuevo que ya existe en la carpeta
   const cuenta = new Map();
